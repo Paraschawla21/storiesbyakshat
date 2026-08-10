@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import crypto from "crypto";
 import { auth } from "@/auth";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_VIDEO_SIZE = 60 * 1024 * 1024; // 60MB — short reel/gif-style clips
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
@@ -28,7 +25,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Unsupported file type. Use JPEG, PNG, WebP, AVIF for images, or MP4/WebM/MOV for short videos.",
+          "Unsupported file type. Use JPEG, PNG, WebP or AVIF for photos, or MP4/WebM/MOV for films.",
       },
       { status: 400 }
     );
@@ -39,19 +36,22 @@ export async function POST(request: NextRequest) {
 
   if (file.size > maxSize) {
     return NextResponse.json(
-      { error: `File too large (max ${isVideo ? "60MB for video" : "10MB for images"}).` },
+      { error: `File too large (max ${isVideo ? "60MB for films" : "10MB for photos"}).` },
       { status: 400 }
     );
   }
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
-
-  const ext = file.name.split(".").pop() || "jpg";
-  const filename = `${crypto.randomUUID()}.${ext}`;
-  const filepath = path.join(UPLOAD_DIR, filename);
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(filepath, buffer);
-
-  return NextResponse.json({ url: `/uploads/${filename}` });
+  try {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    // Cloudinary reports the real dimensions, so the browser doesn't have
+    // to load the file a second time just to measure it.
+    const result = await uploadToCloudinary(buffer);
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error("[upload] Cloudinary upload failed:", err);
+    return NextResponse.json(
+      { error: "Upload failed. Please try again." },
+      { status: 500 }
+    );
+  }
 }
