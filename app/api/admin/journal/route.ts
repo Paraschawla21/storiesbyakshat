@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidateJournal } from "@/lib/revalidate";
 
 function slugify(input: string) {
   return input
@@ -59,6 +60,8 @@ export async function POST(request: NextRequest) {
       publishedAt: published ? new Date() : null,
     },
   });
+
+  revalidateJournal(post.slug);
 
   return NextResponse.json({ post }, { status: 201 });
 }

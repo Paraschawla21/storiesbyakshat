@@ -4,6 +4,10 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // Auth.js v5 refuses to serve auth routes in production unless the host
+  // is explicitly trusted (UntrustedHost). Required for any host that
+  // isn't auto-detected — self-hosted, Docker, preview URLs, etc.
+  trustHost: true,
   providers: [
     Credentials({
       credentials: {

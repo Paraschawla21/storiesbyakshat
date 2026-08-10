@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidateGalleries } from "@/lib/revalidate";
 
 export async function GET(
   _request: NextRequest,
@@ -16,6 +17,7 @@ export async function GET(
   });
 
   if (!gallery) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   return NextResponse.json({ gallery });
 }
 
@@ -83,6 +85,8 @@ export async function PATCH(
     include: { images: { orderBy: { order: "asc" } } },
   });
 
+  revalidateGalleries(gallery.slug);
+
   return NextResponse.json({ gallery });
 }
 
@@ -94,7 +98,8 @@ export async function DELETE(
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await ctx.params;
-  await prisma.gallery.delete({ where: { id } });
+  const removed = await prisma.gallery.delete({ where: { id } });
+  revalidateGalleries(removed.slug);
 
   return NextResponse.json({ ok: true });
 }

@@ -19,7 +19,7 @@ function generatePassword(length = 14) {
 }
 
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL || "akshat@example.com";
+  const adminEmail = process.env.ADMIN_EMAIL || "storiesbyakshat24@gmail.com";
 
   const existing = await prisma.user.findUnique({
     where: { email: adminEmail },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidateJournal } from "@/lib/revalidate";
 
 export async function GET(
   _request: NextRequest,
@@ -13,6 +14,7 @@ export async function GET(
   const post = await prisma.blogPost.findUnique({ where: { id } });
 
   if (!post) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   return NextResponse.json({ post });
 }
 
@@ -58,6 +60,8 @@ export async function PATCH(
     },
   });
 
+  revalidateJournal(post.slug);
+
   return NextResponse.json({ post });
 }
 
@@ -69,7 +73,8 @@ export async function DELETE(
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await ctx.params;
-  await prisma.blogPost.delete({ where: { id } });
+  const removed = await prisma.blogPost.delete({ where: { id } });
+  revalidateJournal(removed.slug);
 
   return NextResponse.json({ ok: true });
 }

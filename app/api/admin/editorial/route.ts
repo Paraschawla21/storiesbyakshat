@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidateEditorial } from "@/lib/revalidate";
 
 export async function GET() {
   const session = await auth();
@@ -39,6 +40,8 @@ export async function POST(request: NextRequest) {
     },
   });
 
+  revalidateEditorial();
+
   return NextResponse.json({ image }, { status: 201 });
 }
 
@@ -62,6 +65,8 @@ export async function PATCH(request: NextRequest) {
       })
     )
   );
+
+  revalidateEditorial();
 
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidateGalleries } from "@/lib/revalidate";
 
 function slugify(input: string) {
   return input
@@ -80,6 +81,8 @@ export async function POST(request: NextRequest) {
     },
     include: { images: true },
   });
+
+  revalidateGalleries(gallery.slug);
 
   return NextResponse.json({ gallery }, { status: 201 });
 }
