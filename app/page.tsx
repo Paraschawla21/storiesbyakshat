@@ -1,69 +1,218 @@
 import Image from "next/image";
+import Link from "next/link";
+import type { Metadata } from "next";
+import Button from "@/components/ui/Button";
+import MasonryGrid from "@/components/gallery/MasonryGrid";
+import GalleryCard from "@/components/gallery/GalleryCard";
+import Badge from "@/components/ui/Badge";
+import Reveal from "@/components/ui/Reveal";
+import HeroParallax from "@/components/home/HeroParallax";
+import { getPublishedGalleries } from "@/lib/content";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "Stories by Akshat — Wedding, Pre-Wedding & Portrait Photography",
+  description:
+    "Warm, editorial wedding, pre-wedding, portrait, and event photography by Akshat. Every gallery is a story, told in golden-hour light.",
+};
+
+const testimonials = [
+  {
+    quote:
+      "Akshat didn't just photograph our wedding, he photographed how it felt. We cried looking at the gallery for the first time.",
+    name: "Meera & Rohan",
+  },
+  {
+    quote:
+      "Unobtrusive, warm, and somehow everywhere at once. Every important moment was captured without us ever noticing a camera.",
+    name: "Anaya & Vikram",
+  },
+  {
+    quote:
+      "The portrait session felt more like an afternoon with a friend than a photoshoot. The photos still don't feel real.",
+    name: "Kavya S.",
+  },
+];
+
+export default async function Home() {
+  const galleries = await getPublishedGalleries();
+  const featured = galleries.slice(0, 6);
+
+  const categories = [
+    {
+      label: "Wedding",
+      href: "/portfolio?category=WEDDING",
+      image: galleries.find((g) => g.category === "WEDDING")?.coverImageUrl,
+      blurb: "Full-day coverage, from haldi to the last dance.",
+    },
+    {
+      label: "Pre-Wedding",
+      href: "/portfolio?category=PRE_WEDDING",
+      image: galleries.find((g) => g.category === "PRE_WEDDING")?.coverImageUrl,
+      blurb: "Quiet couple shoots before the big day.",
+    },
+    {
+      label: "Portrait",
+      href: "/portfolio?category=PORTRAIT",
+      image: galleries.find((g) => g.category === "PORTRAIT")?.coverImageUrl,
+      blurb: "Solo, couple, and family sessions in natural light.",
+    },
+    {
+      label: "Event",
+      href: "/portfolio?category=EVENT",
+      image: galleries.find((g) => g.category === "EVENT")?.coverImageUrl,
+      blurb: "Birthdays, anniversaries, and everything worth celebrating.",
+    },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="flex flex-col">
+      {/* Full-bleed editorial hero */}
+      <section className="relative h-[85svh] min-h-[560px] w-full overflow-hidden">
+        <HeroParallax
+          src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=2000&q=80"
+          alt="A couple walking through a golden field at sunset"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+        <div className="relative flex h-full max-w-6xl flex-col justify-end gap-6 px-6 pb-20 mx-auto">
+          <Reveal direction="up">
+            <p className="font-accent text-2xl text-linen/90 md:text-3xl">
+              every gallery, a story
+            </p>
+          </Reveal>
+          <Reveal direction="up" delay={0.1}>
+            <h1 className="max-w-2xl font-display text-4xl leading-[1.1] text-linen md:text-6xl">
+              Wedding &amp; portrait photography, told in golden-hour light.
+            </h1>
+          </Reveal>
+          <Reveal direction="up" delay={0.2}>
+            <div className="flex flex-wrap gap-4 pt-2">
+              <Button href="/portfolio" variant="primary">
+                View Portfolio
+              </Button>
+              <Button
+                href="/contact"
+                variant="secondary"
+                className="border-linen/40 text-linen hover:border-linen hover:text-linen"
+              >
+                Enquire
+              </Button>
+            </div>
+          </Reveal>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Featured masonry pull */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <Reveal>
+          <div className="mb-10 flex items-end justify-between gap-4">
+            <div>
+              <Badge tone="marigold" className="mb-3">
+                Recent Stories
+              </Badge>
+              <h2 className="font-display text-3xl text-ink md:text-4xl">
+                Featured Galleries
+              </h2>
+            </div>
+            <Link
+              href="/portfolio"
+              className="link-underline hidden shrink-0 text-sm font-medium text-marigold-dark md:block"
+            >
+              View all &rarr;
+            </Link>
+          </div>
+        </Reveal>
+
+        <MasonryGrid>
+          {featured.map((gallery) => (
+            <GalleryCard key={gallery.id} gallery={gallery} />
+          ))}
+        </MasonryGrid>
+
+        <div className="mt-10 text-center md:hidden">
+          <Button href="/portfolio" variant="ghost">
+            View all galleries &rarr;
+          </Button>
         </div>
-      </main>
+      </section>
+
+      {/* Category teasers */}
+      <section className="bg-paper py-20">
+        <div className="mx-auto max-w-6xl px-6">
+          <Reveal>
+            <h2 className="mb-10 font-display text-3xl text-ink md:text-4xl">
+              What We Shoot
+            </h2>
+          </Reveal>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {categories.map((cat, i) => (
+              <Reveal key={cat.label} delay={i * 0.08}>
+                <Link
+                  href={cat.href}
+                  className="group relative block h-72 overflow-hidden rounded-2xl"
+                >
+                  {cat.image && (
+                    <Image
+                      src={cat.image}
+                      alt={cat.label}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                    />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent transition-opacity duration-500 group-hover:from-ink/90" />
+                  <div className="absolute inset-x-0 bottom-0 p-6 transition-transform duration-500 ease-out group-hover:-translate-y-1">
+                    <h3 className="font-display text-2xl text-linen">
+                      {cat.label}
+                    </h3>
+                    <p className="mt-1 text-sm text-linen/80">{cat.blurb}</p>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <Reveal>
+          <h2 className="mb-10 font-display text-3xl text-ink md:text-4xl">
+            Testimonials
+          </h2>
+        </Reveal>
+        <div className="grid gap-8 md:grid-cols-3">
+          {testimonials.map((t, i) => (
+            <Reveal key={t.name} delay={i * 0.1}>
+              <figure className="h-full rounded-2xl border border-ink/10 bg-linen p-6 transition-[transform,box-shadow,border-color] duration-500 ease-out hover:-translate-y-1 hover:border-marigold/40 hover:shadow-[0_12px_32px_-16px_rgba(43,27,18,0.25)]">
+                <blockquote className="font-display text-lg leading-relaxed text-ink">
+                  &ldquo;{t.quote}&rdquo;
+                </blockquote>
+                <figcaption className="mt-4 font-accent text-xl text-marigold-dark">
+                  {t.name}
+                </figcaption>
+              </figure>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-ink py-24 text-center">
+        <Reveal>
+          <div className="mx-auto max-w-2xl px-6">
+            <h2 className="font-display text-3xl text-linen md:text-4xl">
+              Let&apos;s tell your story next.
+            </h2>
+            <p className="mt-4 text-linen/70">
+              Available for weddings, pre-weddings, portraits, and events across India.
+            </p>
+            <div className="mt-8">
+              <Button href="/contact" variant="primary">
+                Get in Touch
+              </Button>
+            </div>
+          </div>
+        </Reveal>
+      </section>
     </div>
   );
 }

@@ -1,26 +1,241 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Color tokens — golden-hour film photography palette */
+  --color-linen: #f6eee1; /* Sun-Bleached Linen — base background */
+  --color-paper: #efe3d0; /* Warm Paper — secondary surface */
+  --color-ink: #2b1b12; /* Espresso — primary text/ink */
+  --color-marigold: #c98a3b; /* golden hour — signature accent */
+  --color-rosewood: #a85c4e; /* secondary accent */
+  --color-olive: #7c7654; /* muted support — tags/dividers only */
+
+  --color-marigold-dark: #a8722e;
+  --color-ink-soft: #4a382c;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-linen: var(--color-linen);
+  --color-paper: var(--color-paper);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-marigold: var(--color-marigold);
+  --color-marigold-dark: var(--color-marigold-dark);
+  --color-rosewood: var(--color-rosewood);
+  --color-olive: var(--color-olive);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-accent: var(--font-accent);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  /* Full-bleed sections (hero, category teasers) sit exactly at 100vw;
+     this is a safety net against any sub-pixel overflow causing a
+     horizontal scrollbar / jitter on scroll. */
+  overflow-x: clip;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-linen);
+  color: var(--color-ink);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
+/* Custom scrollbar — warm tones matching the palette instead of the
+   default grey system scrollbar. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-olive) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--color-olive) 60%, transparent);
+  border-radius: 999px;
+  border: 2px solid var(--color-linen);
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-olive);
+}
+
+/* Visible keyboard focus states everywhere */
+:focus-visible {
+  outline: 2px solid var(--color-marigold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Tailwind v4's Preflight sets `cursor: default` on buttons to match the
+   browser default. Restore the pointer for anything clickable so buttons,
+   file-upload labels and summary toggles all feel interactive. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+label[for],
+label:has(> input[type="file"]),
+summary,
+select:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled) {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: var(--color-marigold);
+  color: var(--color-linen);
+}
+
+/* ---------------------------------------------------------------------
+   Film grain
+   A whisper-fine noise texture over the whole page, tying the site to
+   the film-photography identity. Pure CSS (inline SVG turbulence), so
+   it costs no network request and no JS.
+   --------------------------------------------------------------------- */
+.film-grain::after {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-drift 800ms steps(4) infinite;
+  will-change: transform;
+}
+
+@keyframes grain-drift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 1%); }
+  50% { transform: translate(1%, -2%); }
+  75% { transform: translate(-1%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ---------------------------------------------------------------------
+   Golden-hour sweep
+   A soft band of light that travels across primary buttons on hover —
+   the site's "golden hour" motif expressed as an interaction.
+   --------------------------------------------------------------------- */
+.sweep {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.sweep::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateX(-120%);
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 80%
+  );
+  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sweep:hover::before,
+.sweep:focus-visible::before {
+  transform: translateX(120%);
+}
+
+/* Underline that draws in from the centre — used on inline text links. */
+.link-underline {
+  position: relative;
+}
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.link-underline:hover::after,
+.link-underline:focus-visible::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Keep the grain (it's a texture, not motion) but stop it moving. */
+  .film-grain::after {
+    animation: none !important;
+  }
+}
+
+/* Masonry grid column gutters (react-masonry-css) */
+.masonry-grid {
+  display: flex;
+  margin-left: -1rem;
+  width: auto;
+}
+.masonry-grid_column {
+  padding-left: 1rem;
+  background-clip: padding-box;
+}
+.masonry-grid_column > * {
+  margin-bottom: 1rem;
+}
+
+/* Tiptap editor content styling */
+.prose-like .tiptap {
+  outline: none;
+}
+.prose-like h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  margin-top: 0.5rem;
+}
+.prose-like h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+.prose-like p {
+  line-height: 1.7;
+}
+.prose-like ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+.prose-like blockquote {
+  border-left: 3px solid var(--color-marigold);
+  padding-left: 1rem;
+  font-style: italic;
+  color: var(--color-ink-soft);
+}
+.prose-like a {
+  color: var(--color-marigold-dark);
+  text-decoration: underline;
+}
+

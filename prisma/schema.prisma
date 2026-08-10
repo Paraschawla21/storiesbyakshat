@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  passwordHash      String
+  role              Role               @default(ADMIN)
+  createdAt         DateTime           @default(now())
+  passwordResetOtps PasswordResetOtp[]
+}
+
+enum Role {
+  ADMIN
+}
+
+model PasswordResetOtp {
+  id                  String    @id @default(cuid())
+  userId              String
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  otpHash             String
+  otpExpiresAt        DateTime
+  attempts            Int       @default(0)
+  verified            Boolean   @default(false)
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+  consumed            Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Gallery {
+  id            String         @id @default(cuid())
+  title         String
+  slug          String         @unique
+  category      Category
+  coverImageUrl String
+  coverWidth    Int            @default(1200)
+  coverHeight   Int            @default(1500)
+  storyText     String?
+  eventDate     DateTime?
+  location      String?
+  published     Boolean        @default(false)
+  images        GalleryImage[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model GalleryImage {
+  id        String  @id @default(cuid())
+  galleryId String
+  gallery   Gallery @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  url       String
+  width     Int
+  height    Int
+  caption   String?
+  order     Int     @default(0)
+}
+
+enum Category {
+  WEDDING
+  PRE_WEDDING
+  PORTRAIT
+  EVENT
+}
+
+model BlogPost {
+  id            String    @id @default(cuid())
+  title         String
+  slug          String    @unique
+  coverImageUrl String
+  coverWidth    Int       @default(1400)
+  coverHeight   Int       @default(1050)
+  content       String
+  excerpt       String?
+  tags          String @default("")
+  published     Boolean   @default(false)
+  publishedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model ContactMessage {
+  id        String    @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  eventType String?
+  eventDate DateTime?
+  message   String?
+  status    MsgStatus @default(NEW)
+  createdAt DateTime  @default(now())
+}
+
+enum MsgStatus {
+  NEW
+  READ
+  RESPONDED
+}
+
+model EditorialImage {
+  id        String             @id @default(cuid())
+  type      EditorialMediaType @default(IMAGE)
+  url       String
+  width     Int
+  height    Int
+  caption   String?
+  published Boolean            @default(true)
+  order     Int                @default(0)
+  createdAt DateTime           @default(now())
+}
+
+enum EditorialMediaType {
+  IMAGE
+  VIDEO
+}
