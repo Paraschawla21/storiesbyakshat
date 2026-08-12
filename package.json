@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "NODE_OPTIONS=--use-system-ca next dev",
     "build": "NODE_OPTIONS=--use-system-ca next build",
     "start": "NODE_OPTIONS=--use-system-ca next start",
