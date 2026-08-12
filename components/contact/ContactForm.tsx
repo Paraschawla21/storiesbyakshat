@@ -8,8 +8,10 @@ import { z } from "zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input, Textarea, Select } from "@/components/ui/Input";
 import PhoneInput from "@/components/ui/PhoneInput";
+import DatePicker from "@/components/ui/DatePicker";
 import Button from "@/components/ui/Button";
 import { validatePhoneNumber } from "@/lib/phone";
+import { validateEventDate } from "@/lib/event-date";
 
 const contactSchema = z.object({
   name: z.string().min(2, "Please enter your name"),
@@ -21,7 +23,15 @@ const contactSchema = z.object({
     }
   }),
   eventType: z.enum(["Wedding", "Pre-Wedding", "Portrait", "Event", "Other"]),
-  eventDate: z.string().optional(),
+  eventDate: z
+    .string()
+    .optional()
+    .superRefine((value, ctx) => {
+      const result = validateEventDate(value);
+      if (!result.valid) {
+        ctx.addIssue({ code: "custom", message: result.message });
+      }
+    }),
   message: z.string().optional(),
   // honeypot — must stay empty
   company: z.string().max(0).optional(),
@@ -80,7 +90,7 @@ export default function ContactForm() {
         initial={{ opacity: 0, filter: "blur(10px)" }}
         animate={{ opacity: 1, filter: "blur(0px)" }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="rounded-2xl border border-marigold/30 bg-paper p-10 text-center"
+        className="rounded-3xl border border-ink/8 bg-[color-mix(in_srgb,white_90%,var(--color-linen))] p-10 text-center shadow-[0_20px_60px_-24px_rgba(43,27,18,0.2)] md:p-14"
       >
         <p className="font-accent text-3xl text-marigold-dark">Sent</p>
         <h2 className="mt-3 font-display text-2xl text-ink">
@@ -106,7 +116,7 @@ export default function ContactForm() {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="flex flex-col gap-5"
+        className="flex flex-col gap-5 rounded-3xl border border-ink/8 bg-[color-mix(in_srgb,white_90%,var(--color-linen))] p-8 shadow-[0_20px_60px_-24px_rgba(43,27,18,0.2)] md:p-12"
       >
         {/* Honeypot field — hidden from real users */}
         <div className="hidden" aria-hidden="true">
@@ -156,12 +166,19 @@ export default function ContactForm() {
           </Select>
         </div>
 
-        <Input
-          id="eventDate"
-          type="date"
-          label="Event Date (optional)"
-          error={errors.eventDate?.message}
-          {...register("eventDate")}
+        <Controller
+          name="eventDate"
+          control={control}
+          render={({ field }) => (
+            <DatePicker
+              id="eventDate"
+              label="Event Date (optional)"
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              error={errors.eventDate?.message}
+            />
+          )}
         />
 
         <Textarea

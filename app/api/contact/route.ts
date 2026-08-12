@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { sendContactNotification, sendContactAutoReply } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import { validatePhoneNumber } from "@/lib/phone";
+import { validateEventDate } from "@/lib/event-date";
 
 const contactSchema = z.object({
   name: z.string().min(2).max(200),
@@ -15,7 +16,16 @@ const contactSchema = z.object({
     }
   }),
   eventType: z.string().max(50).optional(),
-  eventDate: z.string().optional().or(z.literal("")),
+  eventDate: z
+    .string()
+    .optional()
+    .or(z.literal(""))
+    .superRefine((value, ctx) => {
+      const result = validateEventDate(value);
+      if (!result.valid) {
+        ctx.addIssue({ code: "custom", message: result.message });
+      }
+    }),
   message: z.string().max(5000).optional().or(z.literal("")),
   // honeypot — bots tend to fill every field
   company: z.string().max(0).optional().or(z.literal("")),

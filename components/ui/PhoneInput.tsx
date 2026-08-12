@@ -7,6 +7,7 @@ import {
   formatPhoneValue,
   getCountryByDial,
 } from "@/lib/phone";
+import type { FieldTone } from "@/components/ui/Input";
 
 interface PhoneInputProps {
   id?: string;
@@ -16,13 +17,15 @@ interface PhoneInputProps {
   onChange?: (value: string) => void;
   onBlur?: () => void;
   name?: string;
+  tone?: FieldTone;
 }
 
 const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
-  ({ id, label, error, value, onChange, onBlur, name }, ref) => {
+  ({ id, label, error, value, onChange, onBlur, name, tone = "light" }, ref) => {
     const parsed = useMemo(() => parsePhoneValue(value), [value]);
     const [dial, setDial] = useState(parsed.dial);
     const country = getCountryByDial(dial);
+    const dark = tone === "dark";
 
     function emit(nextDial: string, nextDigits: string) {
       onChange?.(formatPhoneValue(nextDial, nextDigits));
@@ -36,16 +39,19 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={id} className="text-sm font-medium text-ink-soft">
+          <label
+            htmlFor={id}
+            className={`text-sm font-medium ${dark ? "text-linen/65" : "text-ink-soft"}`}
+          >
             {label}
           </label>
         )}
         <div
-          className={`flex w-full items-stretch overflow-hidden rounded-xl border bg-linen transition-colors focus-within:border-marigold ${
-            error ? "border-rosewood" : "border-ink/15"
-          }`}
+          className={`flex w-full items-stretch overflow-hidden rounded-xl border transition-colors focus-within:border-marigold ${
+            dark ? "bg-linen/8" : "bg-linen"
+          } ${error ? "border-rosewood" : dark ? "border-linen/20" : "border-ink/15"}`}
         >
-          <div className="relative shrink-0 border-r border-ink/15">
+          <div className={`relative shrink-0 border-r ${dark ? "border-linen/20" : "border-ink/15"}`}>
             <select
               aria-label="Country code"
               value={dial}
@@ -57,10 +63,12 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
                 const cappedDigits = parsed.digits.slice(0, nextCountry.maxDigits);
                 emit(nextDial, cappedDigits);
               }}
-              className="h-full w-[3.75rem] appearance-none bg-transparent py-3 pl-3 pr-5 font-body text-base leading-normal text-ink focus-visible:outline-none"
+              className={`h-full w-[3.75rem] appearance-none bg-transparent py-3 pl-3 pr-5 font-body text-base leading-normal focus-visible:outline-none ${
+                dark ? "text-linen" : "text-ink"
+              }`}
             >
               {COUNTRY_CODES.map((c) => (
-                <option key={c.code} value={c.dial}>
+                <option key={c.code} value={c.dial} className="text-ink">
                   {c.dial}
                 </option>
               ))}
@@ -69,7 +77,9 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
               aria-hidden="true"
               viewBox="0 0 20 20"
               fill="none"
-              className="pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-soft"
+              className={`pointer-events-none absolute right-1.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 ${
+                dark ? "text-linen/50" : "text-ink-soft"
+              }`}
             >
               <path
                 d="M5 7.5L10 12.5L15 7.5"
@@ -94,10 +104,22 @@ const PhoneInput = forwardRef<HTMLInputElement, PhoneInputProps>(
             onChange={(e) => handleDigitsChange(e.target.value)}
             onBlur={onBlur}
             maxLength={country.maxDigits}
-            className="min-w-0 flex-1 bg-transparent px-4 py-3 font-body text-base leading-normal text-ink placeholder:text-ink/40 focus-visible:outline-none"
+            className={`min-w-0 flex-1 bg-transparent px-4 py-3 font-body text-base leading-normal focus-visible:outline-none ${
+              dark ? "text-linen placeholder:text-linen/35" : "text-ink placeholder:text-ink/40"
+            }`}
           />
         </div>
-        {error && <span className="text-xs text-rosewood">{error}</span>}
+        {error && (
+          <span
+            className={`text-xs ${
+              dark
+                ? "text-[color-mix(in_srgb,var(--color-rosewood)_60%,white)]"
+                : "text-rosewood"
+            }`}
+          >
+            {error}
+          </span>
+        )}
       </div>
     );
   }
