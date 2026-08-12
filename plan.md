@@ -68,7 +68,7 @@ Pinterest-style responsive masonry (variable-height cards, not a rigid grid) for
 | Image storage | AWS S3 + CloudFront (fits your existing AWS/ECS/S3 experience) — Cloudinary as a simpler fallback if you want built-in transformations without managing infra | Signed upload URLs from an API route; CloudFront in front for caching/CDN |
 | Auth (admin) | Auth.js (NextAuth) with Credentials provider, bcrypt-hashed password, JWT session, role field on User | Protect `/admin/**` via `middleware.ts`, not just client-side checks |
 | Rich content editor | Tiptap (or MDX if you're comfortable authoring in Markdown instead of a WYSIWYG) | For wedding blog posts written from the admin panel |
-| Email delivery | Resend (simplest modern API) — Nodemailer + SMTP as fallback | Contact form → API route → email to Akshat's inbox |
+| Email delivery | Gmail SMTP via Nodemailer (App Password) | Contact form → API route → email to Akshat's inbox |
 | Deployment | Vercel for the Next.js app (simplest for ISR/edge) — or your existing ECS Fargate pipeline if you want everything in one AWS account | Either works; Vercel is less ops overhead for a marketing/portfolio site |
 
 ---
@@ -182,7 +182,7 @@ enum MsgStatus {
 3. On submit, POST to `POST /api/contact`:
    - Validate payload server-side (never trust client validation alone).
    - Save the message to the `ContactMessage` table.
-   - Send an email to **Akshat's inbox** (`ADMIN_EMAIL` env var) via Resend/Nodemailer, containing all submitted fields, formatted plainly and clearly.
+   - Send an email to **Akshat's inbox** (`ADMIN_EMAIL` env var) via Gmail SMTP (Nodemailer), containing all submitted fields, formatted plainly and clearly.
    - **[assumption]** Also send a short auto-reply confirmation email to the consumer ("Thanks for reaching out, Akshat will get back to you within X days") — nice UX touch, easy to add via the same email call.
 4. Show a warm, on-brand success state after submission (not just a generic toast) — this is a good place for the "developing photo" motif again, e.g. a small illustrative confirmation.
 5. Submissions also show up in `/admin/messages` for Akshat to triage even without checking email.
@@ -273,7 +273,8 @@ middleware.ts
 DATABASE_URL=
 NEXTAUTH_SECRET=
 NEXTAUTH_URL=
-RESEND_API_KEY=
+GMAIL_USER=              # Gmail account that sends the mail
+GMAIL_APP_PASSWORD=      # Google App Password (not your login password)
 ADMIN_EMAIL=            # Akshat's inbox — where contact form emails land
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=

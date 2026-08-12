@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import SafeImage from "@/components/ui/SafeImage";
 import type { Metadata } from "next";
 import Badge from "@/components/ui/Badge";
 import Reveal from "@/components/ui/Reveal";
@@ -24,14 +24,19 @@ export default async function JournalPage() {
       </h1>
 
       <div className="flex flex-col gap-12">
-        {posts.map((post, i) => (
+        {posts.length === 0 ? (
+          <p className="text-ink-soft">
+            No stories published yet — check back soon.
+          </p>
+        ) : (
+          posts.map((post, i) => (
           <Reveal key={post.id} delay={i * 0.06}>
             <Link
               href={`/journal/${post.slug}`}
               className="group grid gap-6 sm:grid-cols-[240px_1fr]"
             >
               <div className="relative aspect-4/3 overflow-hidden rounded-2xl">
-                <Image
+                <SafeImage
                   src={post.coverImageUrl}
                   alt={post.title}
                   fill
@@ -57,7 +62,8 @@ export default async function JournalPage() {
               </div>
             </Link>
           </Reveal>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

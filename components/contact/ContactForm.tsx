@@ -60,8 +60,16 @@ export default function ContactForm() {
       setSubmitted(true);
       reset();
     } catch (err) {
+      // A thrown TypeError here means the request never reached the server
+      // (offline, DNS, blocked). "Failed to fetch" helps nobody — give them
+      // a route that doesn't depend on this site working.
+      const isNetworkError = err instanceof TypeError;
       setSubmitError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again."
+        isNetworkError
+          ? "We couldn't reach the server. Check your connection, or email storiesbyakshat24@gmail.com directly."
+          : err instanceof Error
+            ? err.message
+            : "Something went wrong. Please try again."
       );
     }
   }

@@ -57,6 +57,16 @@ export async function POST(request: NextRequest) {
     await sendPasswordResetOtp(email, otp);
   } catch (err) {
     console.error("[forgot-password] Failed to send OTP email:", err);
+    // A mail-server failure is not account-dependent, so reporting it leaks
+    // nothing about whether this email is registered. Staying silent here
+    // would leave Akshat waiting for a code that is never coming.
+    return NextResponse.json(
+      {
+        error:
+          "We couldn't send the reset code right now. Please try again shortly.",
+      },
+      { status: 503 }
+    );
   }
 
   return genericResponse;

@@ -56,26 +56,53 @@ export async function POST(request: NextRequest) {
 
   const { name, email, phone, eventType, eventDate, message } = parsed.data;
 
-  const saved = await prisma.contactMessage.create({
-    data: {
-      name,
-      email,
-      phone: phone || null,
-      eventType: eventType || null,
-      eventDate: eventDate ? new Date(eventDate) : null,
-      message: message || null,
-    },
-  });
-
+  // The enquiry has two independent delivery channels: the database (so it
+  // shows in the admin inbox) and email (so Akshat is notified). Treat them
+  // separately — losing one must not lose the enquiry. We only report failure
+  // to the visitor if BOTH channels fail.
+  let saved: { id: string } | null = null;
   try {
-    await Promise.all([
-      sendContactNotification({ name, email, phone, eventType, eventDate, message }),
-      sendContactAutoReply({ name, email, phone, eventType, eventDate, message }),
-    ]);
+    saved = await prisma.contactMessage.create({
+      data: {
+        name,
+        email,
+        phone: phone || null,
+        eventType: eventType || null,
+        eventDate: eventDate ? new Date(eventDate) : null,
+        message: message || null,
+      },
+      select: { id: true },
+    });
   } catch (err) {
-    // Don't fail the request if email delivery fails — the message is already saved.
-    console.error("[contact] Failed to send email:", err);
+    console.error("[contact] Failed to save message to database:", err);
   }
 
-  return NextResponse.json({ ok: true, id: saved.id });
+  // allSettled, not all: the visitor's auto-reply bouncing must not mask the
+  // fact that Akshat's notification went through. Only the notification
+  // determines whether the enquiry actually reached him.
+  let emailed = false;
+  const [notification, autoReply] = await Promise.allSettled([
+    sendContactNotification({ name, email, phone, eventType, eventDate, message }),
+    sendContactAutoReply({ name, email, phone, eventType, eventDate, message }),
+  ]);
+  if (notification.status === "fulfilled") {
+    emailed = true;
+  } else {
+    console.error("[contact] Failed to send admin notification:", notification.reason);
+  }
+  if (autoReply.status === "rejected") {
+    console.error("[contact] Failed to send auto-reply:", autoReply.reason);
+  }
+
+  if (!saved && !emailed) {
+    return NextResponse.json(
+      {
+        error:
+          "We couldn't submit your enquiry right now. Please email storiesbyakshat24@gmail.com directly and we'll get straight back to you.",
+      },
+      { status: 503 }
+    );
+  }
+
+  return NextResponse.json({ ok: true, id: saved?.id ?? null });
 }

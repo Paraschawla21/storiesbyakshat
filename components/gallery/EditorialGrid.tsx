@@ -36,6 +36,36 @@ function EditorialVideo({
   className?: string;
 }) {
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  // A codec the browser can't decode, a deleted file or a dropped connection
+  // would otherwise leave this permanently at opacity-0 — an invisible hole
+  // in the grid. Fall back to a labelled placeholder that holds its space.
+  if (failed || !src?.trim()) {
+    return (
+      <div
+        className={`relative flex items-center justify-center overflow-hidden bg-paper ${className}`}
+        style={{ aspectRatio: `${width} / ${height}` }}
+      >
+        <div className="flex flex-col items-center gap-2 px-4 text-center">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-6 w-6 text-ink-soft/40"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.25"
+          >
+            <rect x="3" y="6" width="13" height="12" rx="2" />
+            <path d="m16 12 5-3v9l-5-3z" />
+          </svg>
+          <span className="text-[11px] uppercase tracking-[0.18em] text-ink-soft/60">
+            Film unavailable
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -50,6 +80,8 @@ function EditorialVideo({
         playsInline
         preload="metadata"
         onLoadedData={() => setLoaded(true)}
+        onError={() => setFailed(true)}
+        onStalled={() => setLoaded(true)}
         className={`h-full w-full object-cover transition-opacity duration-700 ease-out ${
           loaded ? "opacity-100" : "opacity-0"
         }`}

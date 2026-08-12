@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import { Resend } from "resend";
 import { formatDateLong, formatDateTimeLong } from "@/lib/format";
 
 interface ContactEmailPayload {
@@ -17,65 +16,52 @@ interface SendEmailArgs {
   text: string;
 }
 
-const FROM =
-  process.env.EMAIL_FROM || "Stories by Akshat <onboarding@resend.dev>";
+/**
+ * Gmail SMTP via Nodemailer, using an App Password
+ * (Google Account > Security > 2-Step Verification > App Passwords).
+ *
+ * Built lazily: reading env vars at module load meant a config change needed
+ * a restart, and an import could fail before the app was even serving.
+ */
+let transport: nodemailer.Transporter | null = null;
 
-// --- Gmail SMTP (via Nodemailer) ---
-// Simplest path for local dev / early production before a custom domain is
-// verified with Resend: sends as your own Gmail account using an "App
-// Password" (Google Account > Security > 2-Step Verification > App
-// Passwords). Unlike Resend's sandbox sender, this can deliver to *any*
-// recipient, not just your own verified address.
-const gmailUser = process.env.GMAIL_USER;
-const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
+function getTransport(): nodemailer.Transporter {
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
 
-const gmailTransport =
-  gmailUser && gmailAppPassword
-    ? nodemailer.createTransport({
-        service: "gmail",
-        auth: { user: gmailUser, pass: gmailAppPassword },
-      })
-    : null;
+  if (!user || !pass) {
+    throw new Error(
+      "Email is not configured. Set GMAIL_USER and GMAIL_APP_PASSWORD."
+    );
+  }
 
-// --- Resend (for production, once a custom domain is verified) ---
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
+  if (!transport) {
+    transport = nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass },
+    });
+  }
+
+  return transport;
+}
+
+/** True when email can be sent — lets callers fail early with a clear message. */
+export function isEmailConfigured(): boolean {
+  return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+}
 
 /**
- * Explicitly choose the provider via EMAIL_PROVIDER=gmail|resend.
- * If unset, prefer Gmail when configured (easiest zero-setup path for
- * local dev), otherwise fall back to Resend.
+ * Throws when delivery fails or email isn't configured. Callers decide how to
+ * react: the contact form swallows it (the enquiry is already saved to the
+ * database), while the OTP flow surfaces it — a reset code that silently never
+ * arrives is worse than an honest error.
  */
-const provider =
-  process.env.EMAIL_PROVIDER || (gmailTransport ? "gmail" : "resend");
-
 async function sendEmail({ to, subject, text }: SendEmailArgs): Promise<void> {
-  if (provider === "gmail" && gmailTransport && gmailUser) {
-    await gmailTransport.sendMail({
-      from: `"Stories By Akshat" <${gmailUser}>`,
-      to,
-      subject,
-      text,
-    });
-    console.log(`[email] Sent via Gmail SMTP to ${to}: "${subject}"`);
-    return;
-  }
+  const mailer = getTransport();
+  const from = `"Stories By Akshat" <${process.env.GMAIL_USER}>`;
 
-  if (resend) {
-    const result = await resend.emails.send({ from: FROM, to, subject, text });
-    if (result.error) {
-      throw new Error(result.error.message);
-    }
-    console.log(
-      `[email] Sent via Resend to ${to}, id=${result.data?.id}: "${subject}"`
-    );
-    return;
-  }
-
-  console.warn(
-    `[email] No email provider configured (set GMAIL_USER/GMAIL_APP_PASSWORD or RESEND_API_KEY) — would have sent "${subject}" to ${to}`
-  );
+  await mailer.sendMail({ from, to, subject, text });
+  console.log(`[email] Sent via Gmail SMTP to ${to}: "${subject}"`);
 }
 
 export async function sendContactNotification(payload: ContactEmailPayload) {

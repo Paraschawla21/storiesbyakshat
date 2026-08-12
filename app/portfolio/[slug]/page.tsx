@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Image from "next/image";
+import SafeImage from "@/components/ui/SafeImage";
 import Badge from "@/components/ui/Badge";
 import { formatDateLong } from "@/lib/format";
 import StoryLightbox from "@/components/gallery/Lightbox";
@@ -40,7 +40,7 @@ export default async function GalleryStoryPage(
   return (
     <article>
       <div className="relative h-[60svh] min-h-[420px] w-full">
-        <Image
+        <SafeImage
           src={gallery.coverImageUrl}
           alt={gallery.title}
           fill

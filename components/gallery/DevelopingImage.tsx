@@ -19,6 +19,11 @@ interface DevelopingImageProps {
  * desaturated, softly blurred state into full color and sharpness,
  * mimicking a photograph developing in a darkroom.
  * Respects prefers-reduced-motion.
+ *
+ * If the file itself can't be fetched (deleted from Cloudinary, bad URL,
+ * offline), we fall back to a quiet placeholder that keeps the layout
+ * intact. Without this the reveal would never resolve and the image would
+ * sit blurred and empty forever.
  */
 export default function DevelopingImage({
   src,
@@ -30,7 +35,37 @@ export default function DevelopingImage({
   className = "",
 }: DevelopingImageProps) {
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
   const reduceMotion = useReducedMotion();
+
+  const hasValidSrc = typeof src === "string" && src.trim().length > 0;
+
+  if (!hasValidSrc || failed) {
+    return (
+      <div
+        className={`relative flex items-center justify-center overflow-hidden bg-paper ${className}`}
+        style={{ aspectRatio: `${width} / ${height}` }}
+      >
+        <div className="flex flex-col items-center gap-2 px-4 text-center">
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="h-6 w-6 text-ink-soft/40"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.25"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 3v18M3 12h18" strokeOpacity="0.5" />
+          </svg>
+          <span className="text-[11px] uppercase tracking-[0.18em] text-ink-soft/60">
+            Image unavailable
+          </span>
+        </div>
+        <span className="sr-only">{alt}</span>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -57,6 +92,7 @@ export default function DevelopingImage({
           priority={priority}
           className="object-cover"
           onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
         />
       </motion.div>
     </div>

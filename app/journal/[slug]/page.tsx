@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Image from "next/image";
+import SafeImage from "@/components/ui/SafeImage";
 import Badge from "@/components/ui/Badge";
 import { formatDateLong } from "@/lib/format";
 import { getAllPostSlugs, getPostBySlug, parseTags } from "@/lib/content";
@@ -49,7 +49,7 @@ export default async function BlogPostPage(props: PageProps<"/journal/[slug]">) 
       </p>
 
       <div className="relative mb-10 aspect-16/9 overflow-hidden rounded-2xl">
-        <Image
+        <SafeImage
           src={post.coverImageUrl}
           alt={post.title}
           fill

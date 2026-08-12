@@ -1,4 +1,4 @@
-import Image from "next/image";
+import SafeImage from "@/components/ui/SafeImage";
 import Link from "next/link";
 import type { Metadata } from "next";
 import Button from "@/components/ui/Button";
@@ -150,7 +150,7 @@ export default async function Home() {
                   className="group relative block h-72 overflow-hidden rounded-2xl"
                 >
                   {cat.image && (
-                    <Image
+                    <SafeImage
                       src={cat.image}
                       alt={cat.label}
                       fill

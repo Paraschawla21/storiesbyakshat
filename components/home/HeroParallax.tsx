@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import SafeImage from "@/components/ui/SafeImage";
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
@@ -28,7 +28,7 @@ export default function HeroParallax({ src, alt }: { src: string; alt: string })
         className="absolute inset-0"
         style={reduceMotion ? undefined : { y, scale }}
       >
-        <Image
+        <SafeImage
           src={src}
           alt={alt}
           fill

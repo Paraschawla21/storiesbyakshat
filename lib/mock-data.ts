@@ -238,16 +238,3 @@ export const blogPosts: BlogPost[] = [
     publishedAt: "2025-11-22",
   },
 ];
-
-export function getGalleryBySlug(slug: string) {
-  return galleries.find((g) => g.slug === slug);
-}
-
-export function getPostBySlug(slug: string) {
-  return blogPosts.find((p) => p.slug === slug);
-}
-
-export function getGalleriesByCategory(category?: Category) {
-  if (!category) return galleries;
-  return galleries.filter((g) => g.category === category);
-}

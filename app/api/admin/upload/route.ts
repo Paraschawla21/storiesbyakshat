@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { uploadToCloudinary } from "@/lib/cloudinary";
+import { uploadToCloudinary, isCloudinaryConfigured } from "@/lib/cloudinary";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_VIDEO_SIZE = 60 * 1024 * 1024; // 60MB — short reel/gif-style clips
@@ -14,7 +14,25 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const formData = await request.formData();
+  if (!isCloudinaryConfigured()) {
+    console.error("[upload] Cloudinary env vars missing.");
+    return NextResponse.json(
+      { error: "Image hosting isn't configured. Please contact your developer." },
+      { status: 503 }
+    );
+  }
+
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch (err) {
+    console.error("[upload] Could not parse form data:", err);
+    return NextResponse.json(
+      { error: "Upload was interrupted. Please try again." },
+      { status: 400 }
+    );
+  }
+
   const file = formData.get("file");
 
   if (!(file instanceof File)) {
@@ -49,9 +67,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     console.error("[upload] Cloudinary upload failed:", err);
+    const timedOut = err instanceof Error && err.message.includes("timed out");
     return NextResponse.json(
-      { error: "Upload failed. Please try again." },
-      { status: 500 }
+      {
+        error: timedOut
+          ? "Upload timed out. Check your connection and try a smaller file."
+          : "Upload failed. Please try again.",
+      },
+      { status: timedOut ? 504 : 500 }
     );
   }
 }

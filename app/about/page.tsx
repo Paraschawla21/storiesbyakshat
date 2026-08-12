@@ -1,4 +1,4 @@
-import Image from "next/image";
+import SafeImage from "@/components/ui/SafeImage";
 import type { Metadata } from "next";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -16,7 +16,7 @@ export default function AboutPage() {
       <div className="grid gap-12 md:grid-cols-2 md:items-center">
         <Reveal direction="right" className="md:order-2">
         <div className="group relative aspect-4/5 overflow-hidden rounded-2xl">
-          <Image
+          <SafeImage
             src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1000&q=80"
             alt="Akshat, photographer"
             fill
