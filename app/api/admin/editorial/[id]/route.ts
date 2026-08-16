@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidateEditorial } from "@/lib/revalidate";
+import { deleteFromCloudinary } from "@/lib/cloudinary";
 
 export async function PATCH(
   request: NextRequest,
@@ -36,8 +37,10 @@ export async function DELETE(
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await ctx.params;
-  await prisma.editorialImage.delete({ where: { id } });
+  const removed = await prisma.editorialImage.delete({ where: { id } });
   revalidateEditorial();
+
+  void deleteFromCloudinary(removed.url);
 
   return NextResponse.json({ ok: true });
 }

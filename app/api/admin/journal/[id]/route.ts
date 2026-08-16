@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidateJournal } from "@/lib/revalidate";
+import { deleteFromCloudinary } from "@/lib/cloudinary";
 
 export async function GET(
   _request: NextRequest,
@@ -62,6 +63,10 @@ export async function PATCH(
 
   revalidateJournal(post.slug);
 
+  if (coverImageUrl !== undefined && coverImageUrl !== current.coverImageUrl) {
+    void deleteFromCloudinary(current.coverImageUrl);
+  }
+
   return NextResponse.json({ post });
 }
 
@@ -75,6 +80,8 @@ export async function DELETE(
   const { id } = await ctx.params;
   const removed = await prisma.blogPost.delete({ where: { id } });
   revalidateJournal(removed.slug);
+
+  void deleteFromCloudinary(removed.coverImageUrl);
 
   return NextResponse.json({ ok: true });
 }
