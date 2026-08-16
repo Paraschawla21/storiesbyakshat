@@ -67,7 +67,7 @@ export function VideoLightboxSlide({ slide, offset }: { slide: SlideVideo; offse
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center p-4 sm:p-8">
+    <div className="flex h-full w-full items-center justify-center px-4 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-16">
       <video
         ref={videoRef}
         autoPlay={slide.autoPlay}
