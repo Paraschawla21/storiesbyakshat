@@ -1,3 +1,196 @@
+# Stories by Akshat — Current State & Architecture
+
+> This document originally started as a speculative build brief (kept below,
+> in §Original Build Brief, for historical context). Everything above that
+> line reflects what's **actually built and running today**, including the
+> real-world workarounds discovered along the way. Update this section
+> whenever a meaningful architectural decision or gotcha changes.
+
+---
+
+## 1. What this is
+
+A production wedding/portrait/event photography portfolio site for Akshat,
+with a public marketing site plus a full `/admin` CMS so Akshat can manage
+every piece of content himself without touching code — galleries, films,
+photography, journal posts, testimonials, homepage/about copy, and site
+settings.
+
+Live at: `https://storiesbyakshat.vercel.app/`
+
+## 2. Actual tech stack (deviations from the original brief noted)
+
+| Concern | What's actually used | Note |
+|---|---|---|
+| Framework | **Next.js 16.3.0**, App Router, TypeScript, Turbopack | Not 14 as originally speculated. `proxy.ts` replaces `middleware.ts` in this version. |
+| Database | **PostgreSQL on Neon** (serverless Postgres) | Started on SQLite during early scaffolding, migrated to Postgres/Neon before real use. |
+| ORM | **Prisma 7** with the `@prisma/adapter-pg` driver adapter | Prisma 7 has no `url` in the `datasource` block — connection is wired through `prisma.config.ts` instead. Client output is generated to `lib/generated/prisma` (gitignored, regenerated via `postinstall`). |
+| Image/video storage | **Cloudinary** (not AWS S3/CloudFront as originally planned) | Simpler to manage without provisioning AWS infra; built-in transformations, `resource_type: auto` handles photos and short films through one pipeline. |
+| Uploads | **Direct browser → Cloudinary** signed uploads | Originally planned as file → Next.js API route → Cloudinary. Switched after discovering Vercel serverless functions cap request bodies at **4.5MB** — far below a real video clip. See §4 Workarounds. |
+| Auth | Auth.js (NextAuth) v5 beta, Credentials provider, bcrypt-hashed password | As planned. `proxy.ts` (not `middleware.ts`) + a server-side layout check in `app/admin/(dashboard)/layout.tsx` both guard `/admin/**`. |
+| Rich text | Tiptap | As planned, used for journal post bodies. |
+| Email | **Gmail SMTP via Nodemailer only** | Resend was evaluated and fully removed — Gmail App Password is the sole email path (contact notifications, auto-replies, password-reset OTPs). |
+| Styling | Tailwind CSS v4, custom warm/golden-hour theme | As planned — see palette table below, unchanged from the original design brief. |
+| Animation | Framer Motion | As planned. |
+| Masonry | `react-masonry-css` for Photography/Portfolio; a **custom asymmetric CSS grid** (not masonry) for Films — see §3. |
+| Lightbox | `yet-another-react-lightbox`, but with its **`video` plugin removed** and replaced by a self-rendered video slide — see §4 Workarounds. |
+| Deployment | Vercel | As planned. |
+
+### Color palette (unchanged from original brief)
+| Role | Name | Hex |
+|---|---|---|
+| Base background | Sun-Bleached Linen | `#F6EEE1` |
+| Secondary surface | Warm Paper | `#EFE3D0` |
+| Primary text/ink | Espresso | `#2B1B12` |
+| Signature accent | Marigold (golden hour) | `#C98A3B` |
+| Secondary accent | Rosewood | `#A85C4E` |
+| Muted support | Faded Olive | `#7C7654` |
+
+### Typography (one addition beyond the original brief)
+- **Display:** Fraunces (variable, `opsz`/`SOFT`/`WONK` axes)
+- **Body:** Inter
+- **Accent (italic captions/dates):** Cormorant Garamond, italic-only — this
+  font has **no upright face loaded**, which caused a real bug (see §4).
+- **Script (added this build):** **Caveat**, used *only* for the "stories by"
+  wordmark and the "with love, Akshat" footer signature — not the general
+  accent font.
+
+## 3. Actual data model
+
+Beyond the original brief's `User`/`Gallery`/`GalleryImage`/`BlogPost`/
+`ContactMessage`, the live schema (`prisma/schema.prisma`) adds a full CMS
+layer so nothing is hard-coded in JSX:
+
+- `Testimonial`, `PhilosophyItem`, `PageHeader`, `CategoryTeaser` — repeatable
+  content blocks, each editable under `/admin/content`.
+- `HomepageContent`, `AboutContent`, `SiteSettings` — singleton rows (one
+  row each) holding hero copy, bio text, footer tagline/signature, site
+  title/description, and the Instagram link.
+- `EditorialImage` — a shared model (with a `type: IMAGE | VIDEO` enum) that
+  backs **both** the Photography and Films pages from one admin manager
+  (`/admin/editorial`), rather than two separate models.
+- `Gallery.order` — added later to support manual up/down reordering in the
+  admin gallery list (no drag library — deliberately simple).
+- `PasswordResetOtp` — email-based OTP flow for admin password resets
+  (`onDelete: Cascade` from `User`).
+
+Every `lib/content.ts` getter is wrapped in a `safeQuery()` helper: at
+**build time** errors are re-thrown (so a broken build never ships
+silently); at **runtime** they're caught and a typed fallback is returned
+(empty array, `null`, or hard-coded launch copy) so a database hiccup
+degrades gracefully instead of crashing the page.
+
+Revalidation is `revalidatePath`-based (not tag-based) — see `lib/revalidate.ts`.
+Every admin content type has a matching `revalidate*()` helper that purges
+exactly the public routes it affects, called from the corresponding
+`app/api/admin/**` mutation route. Pages are otherwise fully static
+(no `export const revalidate`/`dynamic` anywhere) — content updates appear
+instantly via on-demand revalidation, not time-based ISR.
+
+## 4. Real-world workarounds discovered building this
+
+These are the non-obvious things that broke (or would have broken) in
+production, and how they were actually fixed — worth knowing before
+changing related code:
+
+1. **Vercel's 4.5MB request body limit vs. wedding film clips.**
+   Routing uploads through a Next.js API route meant every file had to fit
+   inside Vercel's serverless function body-size cap — fine for photos,
+   useless for a video. Fixed by having the browser upload **directly** to
+   Cloudinary using a short-lived signed request
+   (`app/api/admin/upload-signature`) — only that tiny signature payload
+   touches our server. Real ceiling is now Cloudinary's own account limits:
+   **10MB photos / 100MB video** (confirmed live via the account's usage API).
+
+2. **`yet-another-react-lightbox`'s `video` plugin caps playback to the
+   thumbnail's stored pixel dimensions.** It never upscales a small source
+   video, so a portrait clip shot at low resolution looked tiny even in
+   fullscreen. Fixed by dropping the plugin and self-rendering the video
+   slide (`VideoLightboxSlide` in `components/gallery/EditorialGrid.tsx`),
+   using CSS (`max-h-[88vh] max-w-[94vw] object-contain`) and manually
+   driving play/pause off the lightbox's `offset` prop.
+
+3. **Cormorant Garamond (the italic accent font) has no upright face at
+   all.** A plain hyphen in italic captions rendered as a steep diagonal
+   slash. Setting `font-style: normal` on it did **nothing** — the browser
+   has no non-italic glyphs for that family to fall back to. The actual fix
+   (`components/ui/UprightHyphen.tsx`) swaps just the hyphen character to a
+   *different font entirely* (the upright body font), not just a style flag.
+
+4. **Orphaned Cloudinary assets on delete.** Deleting a gallery/post/photo
+   in admin used to only remove the database row — the actual file stayed
+   in Cloudinary forever (storage cost, quota creep). Every delete/replace
+   path now also calls Cloudinary's `destroy` API
+   (`lib/cloudinary.ts: deleteFromCloudinary` / `deleteManyFromCloudinary`),
+   best-effort and non-blocking so a Cloudinary hiccup never blocks a DB
+   delete the admin is waiting on.
+
+5. **Long-running Turbopack dev sessions can desync server/client HTML.**
+   After many rounds of hot-reloaded edits in one `next dev` session, the
+   dev server can serve stale server-rendered HTML while the client bundle
+   has already updated, throwing a hydration mismatch that looks like a
+   real bug but isn't. Fix is always: stop the dev server, `rm -rf .next`,
+   restart. Not a production issue — production builds don't carry dev-time
+   hot-reload state.
+
+6. **`.env.example` was being silently ignored by git.** The blanket
+   `.env*` rule in `.gitignore` also matched `.env.example`, so it was never
+   actually tracked despite existing on disk. Fixed with an explicit
+   `!.env.example` exception.
+
+7. **Next's image cache and framework-default headers were implicit.**
+   `next.config.ts` now explicitly sets `images.minimumCacheTTL` (30 days)
+   and `Cache-Control` headers for `/_next/image`, `/_next/static/*`, and
+   plain static files, rather than relying on undocumented framework
+   defaults — verified live via response headers, not just assumed.
+
+## 5. Known, accepted limitations (not bugs — deliberate tradeoffs)
+
+- **Contact form rate limiting is in-memory** (`lib/rate-limit.ts`), not
+  distributed. Fine for a single low-traffic site; resets on redeploy/cold
+  start and won't hold a hard line across multiple concurrent Vercel
+  instances. Revisit with Upstash Redis or similar if traffic/scale grows.
+- **Seed/demo content ships in `prisma/seed.ts` and schema defaults**
+  (Unsplash stock photos, sample testimonials, a placeholder film URL).
+  This is intentional so a fresh database isn't empty during development —
+  **it must be replaced via `/admin` before treating the site as fully
+  launched** (homepage hero, About photo, testimonials, and the sample
+  galleries in particular).
+- **`CategoryTeaser` has no dedicated admin UI** — editable only directly in
+  the database today.
+
+## 6. Site map (as actually built)
+
+```
+/                          Home — hero, featured masonry, category teasers, testimonials, CTA
+/portfolio                 Full gallery grid, filterable by category
+/portfolio/[slug]           Single gallery "story" — cover hero, images, narrative text
+/photography                Standalone photo grid (EditorialImage, type=IMAGE)
+/films                       Asymmetric 2:1 landscape:portrait video grid (EditorialImage, type=VIDEO)
+/journal                     Blog/journal listing
+/journal/[slug]              Single blog post
+/about                        Bio, philosophy items, CTA
+/contact                      Contact form (DB save + two independent email channels)
+
+/admin/login                  Sign-in (not linked from public nav)
+/admin/forgot-password         Email-OTP password reset flow
+/admin                         Dashboard
+/admin/galleries                List + create/edit galleries, reorder, image management
+/admin/editorial                 Shared manager for Photography + Films uploads
+/admin/journal                    List + create/edit blog posts (Tiptap)
+/admin/messages                    Contact form submissions inbox
+/admin/content                      Homepage / About / Testimonials / Philosophy / Page headers / Site settings
+```
+
+---
+
+## Original Build Brief
+
+> Kept for historical context — this is the original speculative plan the
+> project started from. Several decisions here (AWS S3, Next 14, masonry
+> everywhere) were superseded during the actual build; see the sections
+> above for what's really running.
+
 # Build Prompt: "Stories By Akshat" — Photography Portfolio Website
 
 > Paste everything below into opencode as the task brief. It's written as a direct instruction set so an agent can execute it phase by phase. Where a choice was made for you (library, service, schema), it's marked **[assumption]** — swap freely if you already have a preference.
@@ -303,7 +496,7 @@ NEXT_PUBLIC_SITE_URL=
 
 ## 13. Open Questions to Resolve Before/During Build **[flag these to the user if opencode needs decisions]**
 
-- Final call on image hosting: AWS S3+CloudFront vs. Cloudinary.
-- Whether blog posts are authored via Tiptap (WYSIWYG, stored as HTML) or MDX (Markdown files in-repo) — Tiptap is friendlier for a non-developer admin, MDX is friendlier for version control.
-- Whether testimonials/reviews are static content Akshat provides, or need their own admin-editable model.
-- Whether the contact form should also support file attachments (e.g., a Pinterest inspo board link or reference images) — not in scope above unless requested.
+- Final call on image hosting: AWS S3+CloudFront vs. Cloudinary. **Resolved: Cloudinary.**
+- Whether blog posts are authored via Tiptap (WYSIWYG, stored as HTML) or MDX (Markdown files in-repo) — Tiptap is friendlier for a non-developer admin, MDX is friendlier for version control. **Resolved: Tiptap.**
+- Whether testimonials/reviews are static content Akshat provides, or need their own admin-editable model. **Resolved: own admin-editable model (`Testimonial`).**
+- Whether the contact form should also support file attachments (e.g., a Pinterest inspo board link or reference images) — not in scope above unless requested. **Not implemented — still out of scope.**
