@@ -76,7 +76,6 @@ export function VideoLightboxSlide({ slide, offset }: { slide: SlideVideo; offse
         controls={slide.controls}
         playsInline
         onError={() => setFailed(true)}
-        onStalled={() => setFailed(true)}
         className="h-full max-h-[88vh] w-full max-w-[94vw] rounded-lg object-contain shadow-2xl"
       >
         {slide.sources?.map((source) => (
