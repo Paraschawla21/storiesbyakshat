@@ -16,7 +16,7 @@ export async function GET() {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const galleries = await prisma.gallery.findMany({
-    orderBy: { createdAt: "desc" },
+    orderBy: { order: "asc" },
     include: { images: { orderBy: { order: "asc" } } },
   });
 
@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
   const existing = await prisma.gallery.findUnique({ where: { slug } });
   if (existing) slug = `${slug}-${Date.now().toString(36)}`;
 
+  const maxOrder = await prisma.gallery.aggregate({ _max: { order: true } });
+
   const gallery = await prisma.gallery.create({
     data: {
       title,
@@ -64,6 +66,7 @@ export async function POST(request: NextRequest) {
       eventDate: eventDate ? new Date(eventDate) : null,
       location: location || null,
       published: Boolean(published),
+      order: (maxOrder._max.order ?? -1) + 1,
       images: {
         create: (images ?? []).map(
           (
@@ -85,4 +88,30 @@ export async function POST(request: NextRequest) {
   revalidateGalleries(gallery.slug);
 
   return NextResponse.json({ gallery }, { status: 201 });
+}
+
+export async function PATCH(request: NextRequest) {
+  const session = await auth();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Bulk reorder: [{ id, order }, ...]
+  const body = await request.json();
+  const { items } = body as { items: { id: string; order: number }[] };
+
+  if (!Array.isArray(items)) {
+    return NextResponse.json({ error: "items array is required." }, { status: 400 });
+  }
+
+  await prisma.$transaction(
+    items.map((item) =>
+      prisma.gallery.update({
+        where: { id: item.id },
+        data: { order: item.order },
+      })
+    )
+  );
+
+  revalidateGalleries();
+
+  return NextResponse.json({ ok: true });
 }

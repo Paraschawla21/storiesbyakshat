@@ -48,6 +48,7 @@ model Gallery {
   eventDate     DateTime?
   location      String?
   published     Boolean        @default(false)
+  order         Int            @default(0)
   images        GalleryImage[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -120,4 +121,80 @@ model EditorialImage {
 enum EditorialMediaType {
   IMAGE
   VIDEO
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  quote     String
+  name      String
+  published Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model PhilosophyItem {
+  id    String @id @default(cuid())
+  title String
+  body  String
+  order Int    @default(0)
+}
+
+model PageHeader {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  badge      String
+  heading    String
+  subheading String?
+  updatedAt  DateTime @updatedAt
+}
+
+model CategoryTeaser {
+  id       String   @id @default(cuid())
+  category Category @unique
+  blurb    String
+}
+
+/** Singleton (single row) — homepage hero, section headings, and CTA copy. */
+model HomepageContent {
+  id                   String   @id @default(cuid())
+  eyebrow              String   @default("every gallery, a story")
+  heroHeading          String   @default("Wedding & portrait photography, told in golden-hour light.")
+  heroImageUrl         String   @default("https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=2000&q=80")
+  heroImageAlt         String   @default("A couple walking through a golden field at sunset")
+  ctaPrimaryLabel      String   @default("View Portfolio")
+  ctaSecondaryLabel    String   @default("Enquire")
+  featuredBadge        String   @default("Recent Stories")
+  featuredHeading      String   @default("Featured Galleries")
+  categoriesHeading    String   @default("What We Shoot")
+  testimonialsHeading  String   @default("Testimonials")
+  closingHeading       String   @default("Let's tell your story next.")
+  closingSubtext       String   @default("Available for weddings, pre-weddings, portraits, and events across India.")
+  closingCtaLabel      String   @default("Get in Touch")
+  updatedAt            DateTime @updatedAt
+}
+
+/** Singleton (single row) — About page bio, photo, and philosophy section heading. */
+model AboutContent {
+  id                String   @id @default(cuid())
+  badge             String   @default("About")
+  heading           String   @default("Hi, I'm Akshat.")
+  bioParagraph1     String   @default("I've spent the last decade photographing weddings, portraits, and the small, unrepeatable moments in between. I started with a borrowed film camera at a cousin's wedding and never really put it down.")
+  bioParagraph2     String   @default("My approach is simple: stay out of the way, watch closely, and wait for the light to do most of the work. I'm drawn to golden hour, unscripted laughter, and the quiet minutes before a ceremony begins — the parts most people forget to notice until they see the photos.")
+  bioParagraph3     String   @default("When I'm not shooting, I'm usually developing film in a makeshift darkroom, scouting new locations, or getting embarrassingly emotional at other people's weddings.")
+  photoUrl          String   @default("https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=1000&q=80")
+  photoAlt          String   @default("Akshat, photographer")
+  ctaLabel          String   @default("Work With Me")
+  philosophyHeading String   @default("My Philosophy")
+  updatedAt         DateTime @updatedAt
+}
+
+/** Singleton (single row) — footer copy and site-wide SEO defaults. */
+model SiteSettings {
+  id              String   @id @default(cuid())
+  siteTitle       String   @default("Stories by Akshat — Wedding & Portrait Photography")
+  siteDescription String   @default("Warm, editorial wedding and portrait photography by Akshat. Stories told in golden-hour light.")
+  footerTagline   String   @default("Wedding, portrait & event photography — every gallery is a story, developed frame by frame.")
+  footerSignature String   @default("with love, Akshat")
+  instagramUrl    String   @default("https://www.instagram.com/storiesbyakshat/")
+  updatedAt       DateTime @updatedAt
 }

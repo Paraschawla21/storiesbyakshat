@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readAdminApiError } from "@/lib/adminApiError";
 import Image from "next/image";
 import ImageUploader, { UploadedMedia } from "./ImageUploader";
 import Badge from "@/components/ui/Badge";
@@ -24,12 +25,14 @@ export default function EditorialManager({
   const [images, setImages] = useState(initialImages);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<"ALL" | "IMAGE" | "VIDEO">("ALL");
+  const [saving, setSaving] = useState(false);
 
   const visibleImages =
     filter === "ALL" ? images : images.filter((img) => img.type === filter);
 
   async function handleUpload(uploaded: UploadedMedia[]) {
     setError(null);
+    setSaving(true);
     try {
       for (const media of uploaded) {
         const res = await fetch("/api/admin/editorial", {
@@ -37,12 +40,14 @@ export default function EditorialManager({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(media),
         });
-        if (!res.ok) throw new Error("Failed to save uploaded media.");
+        if (!res.ok) throw new Error(await readAdminApiError(res, "Failed to save uploaded media."));
         const data = await res.json();
         setImages((prev) => [...prev, data.image]);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -56,7 +61,7 @@ export default function EditorialManager({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
       });
-      if (!res.ok) throw new Error("Failed to save change.");
+      if (!res.ok) throw new Error(await readAdminApiError(res, "Failed to save change."));
     } catch (err) {
       setImages(previous);
       setError(err instanceof Error ? err.message : "Failed to save change.");
@@ -72,7 +77,7 @@ export default function EditorialManager({
           items: nextImages.map((img, i) => ({ id: img.id, order: i })),
         }),
       });
-      if (!res.ok) throw new Error("Failed to save new order.");
+      if (!res.ok) throw new Error(await readAdminApiError(res, "Failed to save new order."));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save new order.");
     }
@@ -96,7 +101,7 @@ export default function EditorialManager({
 
     try {
       const res = await fetch(`/api/admin/editorial/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete item.");
+      if (!res.ok) throw new Error(await readAdminApiError(res, "Failed to delete item."));
     } catch (err) {
       setImages(previous);
       setError(err instanceof Error ? err.message : "Failed to delete item.");
@@ -115,11 +120,20 @@ export default function EditorialManager({
         <p className="mt-2 text-xs text-ink-soft">
           Photos (JPEG/PNG/WebP/AVIF, up to 10MB) appear on the{" "}
           <span className="font-medium">Photography</span> page. Films
-          (MP4/WebM/MOV, up to 60MB) appear on the{" "}
+          (MP4/WebM/MOV, up to 100MB) appear on the{" "}
           <span className="font-medium">Films</span> page — keep clips short
           since they autoplay muted.
         </p>
         {error && <p className="mt-2 text-sm text-rosewood">{error}</p>}
+        {saving && (
+          <p className="mt-2 flex items-center gap-2 text-sm text-ink-soft">
+            <span
+              aria-hidden="true"
+              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-ink/20 border-t-marigold"
+            />
+            Adding to your library…
+          </p>
+        )}
       </div>
 
       <div className="mb-6 flex gap-2">

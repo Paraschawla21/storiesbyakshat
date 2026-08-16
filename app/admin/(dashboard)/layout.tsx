@@ -7,6 +7,7 @@ const links = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/galleries", label: "Galleries" },
   { href: "/admin/editorial", label: "Photography & Films" },
+  { href: "/admin/content", label: "Site Content" },
   { href: "/admin/journal", label: "Journal" },
   { href: "/admin/messages", label: "Messages" },
 ];

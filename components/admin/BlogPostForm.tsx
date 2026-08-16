@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readAdminApiError } from "@/lib/adminApiError";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input, Textarea } from "@/components/ui/Input";
@@ -73,8 +74,7 @@ export default function BlogPostForm({
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save post.");
+        throw new Error(await readAdminApiError(res, "Failed to save post."));
       }
 
       router.push("/admin/journal");

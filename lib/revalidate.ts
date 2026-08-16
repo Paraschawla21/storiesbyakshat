@@ -30,3 +30,33 @@ export function revalidateEditorial() {
   revalidatePath("/photography");
   revalidatePath("/films");
 }
+
+/** Testimonials + homepage hero/CTA/section copy live on "/" only. */
+export function revalidateHomepage() {
+  revalidatePath("/");
+}
+
+/** About bio, photo, and philosophy items live on "/about" only. */
+export function revalidateAbout() {
+  revalidatePath("/about");
+}
+
+/** Page header (badge/heading/subheading) — revalidate just the one page it belongs to. */
+export function revalidatePageHeader(slug: string) {
+  const routes: Record<string, string> = {
+    photography: "/photography",
+    portfolio: "/portfolio",
+    films: "/films",
+    journal: "/journal",
+    contact: "/contact",
+  };
+  const path = routes[slug];
+  if (path) revalidatePath(path);
+}
+
+/** Footer tagline/signature/Instagram link render on every page; SEO
+ * defaults affect the root layout metadata. Cheapest safe option is to
+ * revalidate the whole site rather than enumerate every route. */
+export function revalidateSiteSettings() {
+  revalidatePath("/", "layout");
+}

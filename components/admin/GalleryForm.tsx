@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readAdminApiError } from "@/lib/adminApiError";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input, Textarea, Select } from "@/components/ui/Input";
@@ -103,8 +104,7 @@ export default function GalleryForm({
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save gallery.");
+        throw new Error(await readAdminApiError(res, "Failed to save gallery."));
       }
 
       router.push("/admin/galleries");

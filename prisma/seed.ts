@@ -209,6 +209,147 @@ async function main() {
   } else {
     console.log("Editorial video already exists, skipping.");
   }
+
+  // Site content — seeded once with the site's original copy so switching
+  // to the CMS doesn't change anything visually until Akshat edits it.
+  const testimonialCount = await prisma.testimonial.count();
+  if (testimonialCount === 0) {
+    const testimonials = [
+      {
+        quote:
+          "Akshat didn't just photograph our wedding, he photographed how it felt. We cried looking at the gallery for the first time.",
+        name: "Meera & Rohan",
+      },
+      {
+        quote:
+          "Unobtrusive, warm, and somehow everywhere at once. Every important moment was captured without us ever noticing a camera.",
+        name: "Anaya & Vikram",
+      },
+      {
+        quote:
+          "The portrait session felt more like an afternoon with a friend than a photoshoot. The photos still don't feel real.",
+        name: "Kavya S.",
+      },
+    ];
+    for (let i = 0; i < testimonials.length; i++) {
+      await prisma.testimonial.create({
+        data: { ...testimonials[i], order: i, published: true },
+      });
+    }
+    console.log(`Seeded ${testimonials.length} testimonials.`);
+  } else {
+    console.log("Testimonials already exist, skipping seed.");
+  }
+
+  const philosophyCount = await prisma.philosophyItem.count();
+  if (philosophyCount === 0) {
+    const items = [
+      {
+        title: "Presence over performance",
+        body: "I photograph what's actually happening, not a staged version of it.",
+      },
+      {
+        title: "Light first, always",
+        body: "Every shoot is planned around the light, not squeezed around a schedule.",
+      },
+      {
+        title: "The story, not just the shot",
+        body: "Every gallery is sequenced to be read like a story from start to finish.",
+      },
+    ];
+    for (let i = 0; i < items.length; i++) {
+      await prisma.philosophyItem.create({ data: { ...items[i], order: i } });
+    }
+    console.log(`Seeded ${items.length} philosophy items.`);
+  } else {
+    console.log("Philosophy items already exist, skipping seed.");
+  }
+
+  const pageHeaders: {
+    slug: string;
+    badge: string;
+    heading: string;
+    subheading?: string;
+  }[] = [
+    {
+      slug: "photography",
+      badge: "Photography",
+      heading: "Frames worth lingering on.",
+      subheading:
+        "A curated selection of standalone frames — moments captured for their own sake, beyond the arc of any single story.",
+    },
+    {
+      slug: "portfolio",
+      badge: "Portfolio",
+      heading: "Every story, one frame at a time.",
+    },
+    {
+      slug: "films",
+      badge: "Films",
+      heading: "Some moments need movement.",
+      subheading:
+        "Short films and motion pieces — the stories that a still frame couldn't quite hold.",
+    },
+    {
+      slug: "journal",
+      badge: "Journal",
+      heading: "Notes from behind the lens.",
+    },
+    {
+      slug: "contact",
+      badge: "Contact",
+      heading: "Let's tell your story.",
+      subheading:
+        "Fill out the form below with a few details about your event, and Akshat will get back to you within 2 - 3 days.",
+    },
+  ];
+  for (const header of pageHeaders) {
+    await prisma.pageHeader.upsert({
+      where: { slug: header.slug },
+      update: {},
+      create: header,
+    });
+  }
+  console.log("Ensured page headers exist for all static pages.");
+
+  const categoryTeasers: { category: "WEDDING" | "PRE_WEDDING" | "PORTRAIT" | "EVENT"; blurb: string }[] = [
+    { category: "WEDDING", blurb: "Full-day coverage, from haldi to the last dance." },
+    { category: "PRE_WEDDING", blurb: "Quiet couple shoots before the big day." },
+    { category: "PORTRAIT", blurb: "Solo, couple, and family sessions in natural light." },
+    { category: "EVENT", blurb: "Birthdays, anniversaries, and everything worth celebrating." },
+  ];
+  for (const teaser of categoryTeasers) {
+    await prisma.categoryTeaser.upsert({
+      where: { category: teaser.category },
+      update: {},
+      create: teaser,
+    });
+  }
+  console.log("Ensured category teasers exist for all categories.");
+
+  const homepageCount = await prisma.homepageContent.count();
+  if (homepageCount === 0) {
+    await prisma.homepageContent.create({ data: {} });
+    console.log("Seeded homepage content (using schema defaults).");
+  } else {
+    console.log("Homepage content already exists, skipping seed.");
+  }
+
+  const aboutCount = await prisma.aboutContent.count();
+  if (aboutCount === 0) {
+    await prisma.aboutContent.create({ data: {} });
+    console.log("Seeded about content (using schema defaults).");
+  } else {
+    console.log("About content already exists, skipping seed.");
+  }
+
+  const siteSettingsCount = await prisma.siteSettings.count();
+  if (siteSettingsCount === 0) {
+    await prisma.siteSettings.create({ data: {} });
+    console.log("Seeded site settings (using schema defaults).");
+  } else {
+    console.log("Site settings already exist, skipping seed.");
+  }
 }
 
 main()
