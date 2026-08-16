@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Badge from "@/components/ui/Badge";
 import Reveal from "@/components/ui/Reveal";
 import { formatDateLong } from "@/lib/format";
-import { getPublishedPosts, parseTags } from "@/lib/content";
+import { getPublishedPosts, getPageHeader, parseTags } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Journal | Stories by Akshat",
@@ -12,16 +12,26 @@ export const metadata: Metadata = {
 };
 
 export default async function JournalPage() {
-  const posts = await getPublishedPosts();
+  const [posts, header] = await Promise.all([
+    getPublishedPosts(),
+    getPageHeader("journal"),
+  ]);
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
       <Badge tone="rosewood" className="mb-4">
-        Journal
+        {header?.badge}
       </Badge>
-      <h1 className="mb-12 font-display text-3xl leading-tight text-ink md:text-4xl">
-        Notes from behind the lens.
+      <h1
+        className={`font-display text-3xl leading-tight text-ink md:text-4xl ${
+          header?.subheading ? "mb-4" : "mb-12"
+        }`}
+      >
+        {header?.heading}
       </h1>
+      {header?.subheading && (
+        <p className="mb-8 max-w-xl text-lg text-ink-soft">{header.subheading}</p>
+      )}
 
       <div className="flex flex-col gap-12">
         {posts.length === 0 ? (

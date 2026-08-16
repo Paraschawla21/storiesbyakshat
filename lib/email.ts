@@ -45,11 +45,6 @@ function getTransport(): nodemailer.Transporter {
   return transport;
 }
 
-/** True when email can be sent — lets callers fail early with a clear message. */
-export function isEmailConfigured(): boolean {
-  return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
-}
-
 /**
  * Throws when delivery fails or email isn't configured. Callers decide how to
  * react: the contact form swallows it (the enquiry is already saved to the
@@ -58,10 +53,9 @@ export function isEmailConfigured(): boolean {
  */
 async function sendEmail({ to, subject, text }: SendEmailArgs): Promise<void> {
   const mailer = getTransport();
-  const from = `"Stories By Akshat" <${process.env.GMAIL_USER}>`;
+  const from = `"Stories by Akshat" <${process.env.GMAIL_USER}>`;
 
   await mailer.sendMail({ from, to, subject, text });
-  console.log(`[email] Sent via Gmail SMTP to ${to}: "${subject}"`);
 }
 
 export async function sendContactNotification(payload: ContactEmailPayload) {

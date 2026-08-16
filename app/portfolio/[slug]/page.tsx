@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import SafeImage from "@/components/ui/SafeImage";
 import Badge from "@/components/ui/Badge";
+import BackLink from "@/components/ui/BackLink";
 import { formatDateLong } from "@/lib/format";
 import StoryLightbox from "@/components/gallery/Lightbox";
 import { getAllGallerySlugs, getGalleryBySlug, CATEGORY_LABELS, CATEGORY_TONES } from "@/lib/content";
@@ -39,7 +40,11 @@ export default async function GalleryStoryPage(
 
   return (
     <article>
-      <div className="relative h-[60svh] min-h-[420px] w-full">
+      <div className="mx-auto max-w-6xl px-6 pt-8">
+        <BackLink href="/portfolio" label="Back to Portfolio" />
+      </div>
+
+      <div className="relative mt-6 h-[60svh] min-h-[420px] w-full">
         <SafeImage
           src={gallery.coverImageUrl}
           alt={gallery.title}

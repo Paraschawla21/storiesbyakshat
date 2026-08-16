@@ -7,7 +7,13 @@ import GalleryCard from "@/components/gallery/GalleryCard";
 import Badge from "@/components/ui/Badge";
 import Reveal from "@/components/ui/Reveal";
 import HeroParallax from "@/components/home/HeroParallax";
-import { getPublishedGalleries } from "@/lib/content";
+import {
+  getPublishedGalleries,
+  getTestimonials,
+  getCategoryTeasers,
+  getHomepageContent,
+  CATEGORY_LABELS,
+} from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Stories by Akshat — Wedding, Pre-Wedding & Portrait Photography",
@@ -15,85 +21,49 @@ export const metadata: Metadata = {
     "Warm, editorial wedding, pre-wedding, portrait, and event photography by Akshat. Every gallery is a story, told in golden-hour light.",
 };
 
-const testimonials = [
-  {
-    quote:
-      "Akshat didn't just photograph our wedding, he photographed how it felt. We cried looking at the gallery for the first time.",
-    name: "Meera & Rohan",
-  },
-  {
-    quote:
-      "Unobtrusive, warm, and somehow everywhere at once. Every important moment was captured without us ever noticing a camera.",
-    name: "Anaya & Vikram",
-  },
-  {
-    quote:
-      "The portrait session felt more like an afternoon with a friend than a photoshoot. The photos still don't feel real.",
-    name: "Kavya S.",
-  },
-];
-
 export default async function Home() {
-  const galleries = await getPublishedGalleries();
+  const [galleries, testimonials, categoryTeasers, content] = await Promise.all([
+    getPublishedGalleries(),
+    getTestimonials(),
+    getCategoryTeasers(),
+    getHomepageContent(),
+  ]);
   const featured = galleries.slice(0, 6);
 
-  const categories = [
-    {
-      label: "Wedding",
-      href: "/portfolio?category=WEDDING",
-      image: galleries.find((g) => g.category === "WEDDING")?.coverImageUrl,
-      blurb: "Full-day coverage, from haldi to the last dance.",
-    },
-    {
-      label: "Pre-Wedding",
-      href: "/portfolio?category=PRE_WEDDING",
-      image: galleries.find((g) => g.category === "PRE_WEDDING")?.coverImageUrl,
-      blurb: "Quiet couple shoots before the big day.",
-    },
-    {
-      label: "Portrait",
-      href: "/portfolio?category=PORTRAIT",
-      image: galleries.find((g) => g.category === "PORTRAIT")?.coverImageUrl,
-      blurb: "Solo, couple, and family sessions in natural light.",
-    },
-    {
-      label: "Event",
-      href: "/portfolio?category=EVENT",
-      image: galleries.find((g) => g.category === "EVENT")?.coverImageUrl,
-      blurb: "Birthdays, anniversaries, and everything worth celebrating.",
-    },
-  ];
+  const categories = categoryTeasers.map((teaser) => ({
+    label: CATEGORY_LABELS[teaser.category],
+    href: `/portfolio?category=${teaser.category}`,
+    image: galleries.find((g) => g.category === teaser.category)?.coverImageUrl,
+    blurb: teaser.blurb,
+  }));
 
   return (
     <div className="flex flex-col">
       {/* Full-bleed editorial hero */}
       <section className="relative h-[85svh] min-h-[560px] w-full overflow-hidden">
-        <HeroParallax
-          src="https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=2000&q=80"
-          alt="A couple walking through a golden field at sunset"
-        />
+        <HeroParallax src={content.heroImageUrl} alt={content.heroImageAlt} />
         <div className="relative flex h-full max-w-6xl flex-col justify-end gap-6 px-6 pb-20 mx-auto">
           <Reveal direction="up">
             <p className="font-accent text-2xl text-linen/90 md:text-3xl">
-              every gallery, a story
+              {content.eyebrow}
             </p>
           </Reveal>
           <Reveal direction="up" delay={0.1}>
             <h1 className="max-w-2xl font-display text-4xl leading-[1.1] text-linen md:text-6xl">
-              Wedding &amp; portrait photography, told in golden-hour light.
+              {content.heroHeading}
             </h1>
           </Reveal>
           <Reveal direction="up" delay={0.2}>
             <div className="flex flex-wrap gap-4 pt-2">
               <Button href="/portfolio" variant="primary">
-                View Portfolio
+                {content.ctaPrimaryLabel}
               </Button>
               <Button
                 href="/contact"
                 variant="secondary"
                 className="border-linen/40 text-linen hover:border-linen hover:text-linen"
               >
-                Enquire
+                {content.ctaSecondaryLabel}
               </Button>
             </div>
           </Reveal>
@@ -106,10 +76,10 @@ export default async function Home() {
           <div className="mb-10 flex items-end justify-between gap-4">
             <div>
               <Badge tone="marigold" className="mb-3">
-                Recent Stories
+                {content.featuredBadge}
               </Badge>
               <h2 className="font-display text-3xl text-ink md:text-4xl">
-                Featured Galleries
+                {content.featuredHeading}
               </h2>
             </div>
             <Link
@@ -121,11 +91,15 @@ export default async function Home() {
           </div>
         </Reveal>
 
-        <MasonryGrid>
-          {featured.map((gallery) => (
-            <GalleryCard key={gallery.id} gallery={gallery} />
-          ))}
-        </MasonryGrid>
+        {featured.length > 0 ? (
+          <MasonryGrid>
+            {featured.map((gallery) => (
+              <GalleryCard key={gallery.id} gallery={gallery} />
+            ))}
+          </MasonryGrid>
+        ) : (
+          <p className="text-ink-soft">New galleries coming soon.</p>
+        )}
 
         <div className="mt-10 text-center md:hidden">
           <Button href="/portfolio" variant="ghost">
@@ -139,7 +113,7 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-6">
           <Reveal>
             <h2 className="mb-10 font-display text-3xl text-ink md:text-4xl">
-              What We Shoot
+              {content.categoriesHeading}
             </h2>
           </Reveal>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -176,12 +150,12 @@ export default async function Home() {
       <section className="mx-auto max-w-6xl px-6 py-20">
         <Reveal>
           <h2 className="mb-10 font-display text-3xl text-ink md:text-4xl">
-            Testimonials
+            {content.testimonialsHeading}
           </h2>
         </Reveal>
         <div className="grid gap-8 md:grid-cols-3">
           {testimonials.map((t, i) => (
-            <Reveal key={t.name} delay={i * 0.1}>
+            <Reveal key={t.id} delay={i * 0.1}>
               <figure className="h-full rounded-2xl border border-ink/10 bg-linen p-6 transition-[transform,box-shadow,border-color] duration-500 ease-out hover:-translate-y-1 hover:border-marigold/40 hover:shadow-[0_12px_32px_-16px_rgba(43,27,18,0.25)]">
                 <blockquote className="font-display text-lg leading-relaxed text-ink">
                   &ldquo;{t.quote}&rdquo;
@@ -200,14 +174,12 @@ export default async function Home() {
         <Reveal>
           <div className="mx-auto max-w-2xl px-6">
             <h2 className="font-display text-3xl text-linen md:text-4xl">
-              Let&apos;s tell your story next.
+              {content.closingHeading}
             </h2>
-            <p className="mt-4 text-linen/70">
-              Available for weddings, pre-weddings, portraits, and events across India.
-            </p>
+            <p className="mt-4 text-linen/70">{content.closingSubtext}</p>
             <div className="mt-8">
               <Button href="/contact" variant="primary">
-                Get in Touch
+                {content.closingCtaLabel}
               </Button>
             </div>
           </div>

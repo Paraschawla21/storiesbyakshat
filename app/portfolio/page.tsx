@@ -2,7 +2,7 @@ import Badge from "@/components/ui/Badge";
 import Reveal from "@/components/ui/Reveal";
 import MasonryGrid from "@/components/gallery/MasonryGrid";
 import GalleryCard from "@/components/gallery/GalleryCard";
-import { getPublishedGalleries, ALL_CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/content";
+import { getPublishedGalleries, getPageHeader, ALL_CATEGORIES, CATEGORY_LABELS, type Category } from "@/lib/content";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -21,17 +21,23 @@ export default async function PortfolioPage(props: PageProps<"/portfolio">) {
   const searchParams = await props.searchParams;
   const category = (searchParams.category as Category | undefined) ?? undefined;
 
-  const filtered = await getPublishedGalleries(category);
+  const [filtered, header] = await Promise.all([
+    getPublishedGalleries(category),
+    getPageHeader("portfolio"),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <Reveal>
         <Badge tone="marigold" className="mb-4">
-          Portfolio
+          {header?.badge}
         </Badge>
         <h1 className="mb-8 font-display text-3xl leading-tight text-ink md:text-4xl">
-          Every story, one frame at a time.
+          {header?.heading}
         </h1>
+        {header?.subheading && (
+          <p className="mb-8 max-w-xl text-lg text-ink-soft">{header.subheading}</p>
+        )}
       </Reveal>
 
       <div className="mb-10 flex flex-wrap gap-3">

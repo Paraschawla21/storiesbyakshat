@@ -24,7 +24,7 @@ export default function GalleryCard({
   return (
     <Link
       href={`/portfolio/${gallery.slug}`}
-      className="group block overflow-hidden rounded-2xl transition-transform duration-500 ease-out focus-visible:scale-[1.02]"
+      className="group block transition-transform duration-500 ease-out focus-visible:scale-[1.02]"
     >
       <div className="relative overflow-hidden rounded-2xl">
         <div className="transition-transform duration-700 ease-out group-hover:scale-[1.06]">

@@ -35,7 +35,7 @@ export const COUNTRY_CODES: CountryCode[] = [
   { code: "BR", name: "Brazil", dial: "+55", minDigits: 10, maxDigits: 11 },
 ];
 
-export const DEFAULT_DIAL = "+91";
+const DEFAULT_DIAL = "+91";
 
 /** Sorted by dial length descending so "+971" isn't matched as "+9". */
 const DIAL_CODES_BY_LENGTH = [...new Set(COUNTRY_CODES.map((c) => c.dial))].sort(

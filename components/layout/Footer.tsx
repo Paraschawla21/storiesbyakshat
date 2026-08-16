@@ -5,7 +5,13 @@ import { usePathname } from "next/navigation";
 import Logo from "./Logo";
 import { getCurrentYear } from "@/lib/format";
 
-export default function Footer() {
+interface FooterProps {
+  tagline: string;
+  signature: string;
+  instagramUrl: string;
+}
+
+export default function Footer({ tagline, signature, instagramUrl }: FooterProps) {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
 
@@ -15,11 +21,10 @@ export default function Footer() {
         <div className="max-w-sm">
           <Logo variant="full" />
           <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-            Wedding, portrait &amp; event photography — every gallery is a
-            story, developed frame by frame.
+            {tagline}
           </p>
-          <p className="mt-4 font-accent text-2xl text-marigold-dark">
-            with love, Akshat
+          <p className="mt-4 font-script text-2xl text-marigold-dark">
+            {signature}
           </p>
         </div>
 
@@ -70,7 +75,7 @@ export default function Footer() {
               Contact
             </Link>
             <a
-              href="https://www.instagram.com/storiesbyakshat/"
+              href={instagramUrl}
               target="_blank"
               rel="noreferrer"
               className="text-sm text-ink hover:text-marigold-dark"

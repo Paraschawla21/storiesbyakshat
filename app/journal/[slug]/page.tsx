@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import SafeImage from "@/components/ui/SafeImage";
 import Badge from "@/components/ui/Badge";
+import BackLink from "@/components/ui/BackLink";
 import { formatDateLong } from "@/lib/format";
 import { getAllPostSlugs, getPostBySlug, parseTags } from "@/lib/content";
 
@@ -34,6 +35,7 @@ export default async function BlogPostPage(props: PageProps<"/journal/[slug]">) 
 
   return (
     <article className="mx-auto max-w-3xl px-6 py-16">
+      <BackLink href="/journal" label="Back to Journal" className="mb-8" />
       <div className="mb-3 flex flex-wrap gap-2">
         {parseTags(post.tags).map((tag) => (
           <Badge key={tag} tone="rosewood">

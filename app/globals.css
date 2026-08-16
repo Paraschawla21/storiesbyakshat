@@ -26,10 +26,18 @@
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-accent: var(--font-accent);
+  --font-script: var(--font-script);
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Cormorant Garamond is loaded italic-only (see app/layout.tsx); the
+   font-family theme token above has no way to carry font-style, so it's
+   set explicitly here for every element using the font-accent utility. */
+.font-accent {
+  font-style: italic;
 }
 
 html,
