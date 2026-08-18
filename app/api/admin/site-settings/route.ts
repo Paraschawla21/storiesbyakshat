@@ -20,7 +20,7 @@ export async function PATCH(request: NextRequest) {
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await request.json();
-  const { siteTitle, siteDescription, footerTagline, footerSignature, instagramUrl } = body;
+  const { siteTitle, siteDescription, footerTagline, footerSignature, instagramUrl, contactPhone } = body;
 
   const data = {
     ...(siteTitle !== undefined ? { siteTitle } : {}),
@@ -28,6 +28,7 @@ export async function PATCH(request: NextRequest) {
     ...(footerTagline !== undefined ? { footerTagline } : {}),
     ...(footerSignature !== undefined ? { footerSignature } : {}),
     ...(instagramUrl !== undefined ? { instagramUrl } : {}),
+    ...(contactPhone !== undefined ? { contactPhone: contactPhone || null } : {}),
   };
 
   const existing = await prisma.siteSettings.findFirst();

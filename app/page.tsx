@@ -168,23 +168,6 @@ export default async function Home() {
           ))}
         </div>
       </section>
-
-      {/* CTA */}
-      <section className="bg-ink py-24 text-center">
-        <Reveal>
-          <div className="mx-auto max-w-2xl px-6">
-            <h2 className="font-display text-3xl text-linen md:text-4xl">
-              {content.closingHeading}
-            </h2>
-            <p className="mt-4 text-linen/70">{content.closingSubtext}</p>
-            <div className="mt-8">
-              <Button href="/contact" variant="primary">
-                {content.closingCtaLabel}
-              </Button>
-            </div>
-          </div>
-        </Reveal>
-      </section>
     </div>
   );
 }

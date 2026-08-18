@@ -31,9 +31,11 @@ export function revalidateEditorial() {
   revalidatePath("/films");
 }
 
-/** Testimonials + homepage hero/CTA/section copy live on "/" only. */
+/** Testimonials + homepage hero/CTA/section copy. The closing "Get in
+ * Touch" band is rendered from the root layout onto every page, so this
+ * has to purge the whole site, not just "/". */
 export function revalidateHomepage() {
-  revalidatePath("/");
+  revalidatePath("/", "layout");
 }
 
 /** About bio, photo, and philosophy items live on "/about" only. */

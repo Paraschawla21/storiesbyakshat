@@ -11,6 +11,7 @@ export interface SiteSettingsValues {
   footerTagline: string;
   footerSignature: string;
   instagramUrl: string;
+  contactPhone: string | null;
 }
 
 export default function SiteSettingsForm({
@@ -89,6 +90,19 @@ export default function SiteSettingsForm({
           value={values.instagramUrl}
           onChange={(e) => update("instagramUrl", e.target.value)}
         />
+      </div>
+
+      <div>
+        <Input
+          id="contactPhone"
+          label="Contact Phone Number"
+          placeholder="+91 98765 43210"
+          value={values.contactPhone ?? ""}
+          onChange={(e) => update("contactPhone", e.target.value)}
+        />
+        <p className="mt-1.5 text-xs text-ink-soft">
+          Shown as a call link in the &ldquo;Get in Touch&rdquo; section on every page. Leave blank to hide it.
+        </p>
       </div>
 
       {error && <p className="text-sm text-rosewood">{error}</p>}

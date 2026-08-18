@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Fraunces, Inter, Cormorant_Garamond, Caveat } from "next/font/google";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
-import { getSiteSettings } from "@/lib/content";
+import ClosingCta from "@/components/layout/ClosingCta";
+import { getSiteSettings, getHomepageContent } from "@/lib/content";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -52,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const settings = await getSiteSettings();
+  const [settings, homepage] = await Promise.all([getSiteSettings(), getHomepageContent()]);
 
   return (
     <html
@@ -63,6 +64,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="film-grain min-h-full flex flex-col bg-linen text-ink font-body">
         <Nav />
         <main className="flex-1">{children}</main>
+        <ClosingCta
+          heading={homepage.closingHeading}
+          subtext={homepage.closingSubtext}
+          ctaLabel={homepage.closingCtaLabel}
+          phone={settings.contactPhone}
+        />
         <Footer
           tagline={settings.footerTagline}
           signature={settings.footerSignature}

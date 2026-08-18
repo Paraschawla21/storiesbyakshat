@@ -196,5 +196,6 @@ model SiteSettings {
   footerTagline   String   @default("Wedding, portrait & event photography — every gallery is a story, developed frame by frame.")
   footerSignature String   @default("with love, Akshat")
   instagramUrl    String   @default("https://www.instagram.com/storiesbyakshat/")
+  contactPhone    String?
   updatedAt       DateTime @updatedAt
 }

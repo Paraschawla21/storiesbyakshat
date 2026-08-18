@@ -329,6 +329,7 @@ const SITE_SETTINGS_FALLBACK = {
     "Wedding, portrait & event photography — every gallery is a story, developed frame by frame.",
   footerSignature: "with love, Akshat",
   instagramUrl: "https://www.instagram.com/storiesbyakshat/",
+  contactPhone: null as string | null,
   updatedAt: new Date(0),
 };
 
