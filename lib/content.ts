@@ -274,7 +274,7 @@ const HOMEPAGE_FALLBACK = {
     "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&w=2000&q=80",
   heroImageAlt: "A couple walking through a golden field at sunset",
   ctaPrimaryLabel: "View Portfolio",
-  ctaSecondaryLabel: "Enquire",
+  ctaSecondaryLabel: "Book a Call",
   featuredBadge: "Recent Stories",
   featuredHeading: "Featured Galleries",
   categoriesHeading: "What We Shoot",
