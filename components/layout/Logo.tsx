@@ -41,14 +41,14 @@ export default function Logo({
 
       <span className="flex flex-col items-start">
         <span
-          className={`font-script leading-none text-marigold-dark ${
+          className={`font-logo-script leading-none text-marigold-dark ${
             variant === "nav" ? "text-2xl md:text-3xl" : "text-5xl md:text-6xl"
           }`}
         >
           stories by
         </span>
         <span
-          className={`font-display font-semibold uppercase leading-none text-ink ${
+          className={`font-logo-akshat font-semibold uppercase leading-none text-ink ${
             variant === "nav"
               ? "text-base tracking-[0.28em] md:text-lg"
               : "text-2xl tracking-[0.3em] md:text-3xl"

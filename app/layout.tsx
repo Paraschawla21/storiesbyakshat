@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, Cormorant_Garamond, Caveat } from "next/font/google";
+import { Fraunces, Inter, Cormorant_Garamond, Caveat, Josefin_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import ClosingCta from "@/components/layout/ClosingCta";
@@ -28,6 +29,21 @@ const caveat = Caveat({
   variable: "--font-script",
   subsets: ["latin"],
   weight: ["500", "600", "700"],
+});
+
+/** "AKSHAT" in the wordmark — Akshat's actual brand font (see Logo.tsx). */
+const josefinSans = Josefin_Sans({
+  variable: "--font-logo-akshat",
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+});
+
+/** "stories by" in the wordmark — Akshat's actual brand script font (see
+ * Logo.tsx). Not a Google Font, so it's self-hosted from app/fonts/. */
+const buongiornoRastellino = localFont({
+  src: "./fonts/BuongiornoRastellino.otf",
+  variable: "--font-logo-script",
+  display: "swap",
 });
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -59,7 +75,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${fraunces.variable} ${inter.variable} ${cormorantGaramond.variable} ${caveat.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${inter.variable} ${cormorantGaramond.variable} ${caveat.variable} ${josefinSans.variable} ${buongiornoRastellino.variable} h-full antialiased`}
     >
       <body className="film-grain min-h-full flex flex-col bg-linen text-ink font-body">
         <Nav />

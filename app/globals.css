@@ -27,6 +27,8 @@
   --font-body: var(--font-body);
   --font-accent: var(--font-accent);
   --font-script: var(--font-script);
+  --font-logo-akshat: var(--font-logo-akshat);
+  --font-logo-script: var(--font-logo-script);
 }
 
 html {
