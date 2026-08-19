@@ -42,7 +42,7 @@ export default function Logo({
       <span className="flex flex-col items-start">
         <span
           className={`font-logo-script leading-none text-marigold-dark ${
-            variant === "nav" ? "text-2xl md:text-3xl" : "text-5xl md:text-6xl"
+            variant === "nav" ? "text-4xl md:text-5xl" : "text-[90px] md:text-[112px]"
           }`}
         >
           stories by
