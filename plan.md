@@ -1,4 +1,4 @@
-# Stories by Akshat — Current State & Architecture
+# Stories by Akshat - Current State & Architecture
 
 > This document originally started as a speculative build brief (kept below,
 > in §Original Build Brief, for historical context). Everything above that

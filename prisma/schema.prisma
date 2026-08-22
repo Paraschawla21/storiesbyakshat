@@ -191,7 +191,7 @@ model AboutContent {
 /** Singleton (single row) — footer copy and site-wide SEO defaults. */
 model SiteSettings {
   id              String   @id @default(cuid())
-  siteTitle       String   @default("Stories by Akshat — Wedding & Portrait Photography")
+  siteTitle       String   @default("Stories by Akshat - Wedding & Portrait Photography")
   siteDescription String   @default("Warm, editorial wedding and portrait photography by Akshat. Stories told in golden-hour light.")
   footerTagline   String   @default("Wedding, portrait & event photography — every gallery is a story, developed frame by frame.")
   footerSignature String   @default("with love, Akshat")

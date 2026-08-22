@@ -16,7 +16,7 @@ import {
 } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Stories by Akshat — Wedding, Pre-Wedding & Portrait Photography",
+  title: "Stories by Akshat - Wedding, Pre-Wedding & Portrait Photography",
   description:
     "Warm, editorial wedding, pre-wedding, portrait, and event photography by Akshat. Every gallery is a story, told in golden-hour light.",
 };

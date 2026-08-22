@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getAllGallerySlugs, getAllPostSlugs } from "@/lib/content";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://storiesbyakshat.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [gallerySlugs, postSlugs] = await Promise.all([

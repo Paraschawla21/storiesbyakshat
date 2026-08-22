@@ -322,7 +322,7 @@ export async function getAboutContent() {
 
 const SITE_SETTINGS_FALLBACK = {
   id: "fallback",
-  siteTitle: "Stories by Akshat — Wedding & Portrait Photography",
+  siteTitle: "Stories by Akshat - Wedding & Portrait Photography",
   siteDescription:
     "Warm, editorial wedding and portrait photography by Akshat. Stories told in golden-hour light.",
   footerTagline:
