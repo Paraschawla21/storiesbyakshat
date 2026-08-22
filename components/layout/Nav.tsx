@@ -62,7 +62,7 @@ export default function Nav() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full transition-[background-color,box-shadow] duration-300 ease-out ${
+        className={`sticky top-0 z-50 w-full overflow-hidden transition-[background-color,box-shadow] duration-300 ease-out ${
           scrolled
             ? "bg-paper/95 shadow-[0_1px_0_0_rgba(43,27,18,0.08)] backdrop-blur-sm"
             : "bg-transparent shadow-none"

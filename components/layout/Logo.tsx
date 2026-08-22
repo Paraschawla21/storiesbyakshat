@@ -21,46 +21,48 @@ export default function Logo({
   /** Set false to render the wordmark alone (e.g. very tight spaces). */
   showMark?: boolean;
 }) {
+  if (variant === "full") {
+    return (
+      <Link
+        href="/"
+        className={`group inline-flex items-center gap-4 text-left ${className}`}
+        aria-label="Stories by Akshat — Home"
+      >
+        {showMark && (
+          <LogoMark className="h-14 w-14 shrink-0 translate-y-3 transition-transform duration-500 ease-out group-hover:rotate-12 md:h-16 md:w-16 md:translate-y-4" />
+        )}
+        <span className="flex flex-col items-start">
+          <span className="font-logo-script text-[76px] leading-none text-marigold-dark md:text-[96px]">
+            stories by
+          </span>
+          <span className="font-logo-akshat -mt-2 text-xl font-semibold uppercase leading-none tracking-[0.3em] text-ink md:-mt-2.5 md:text-2xl">
+            AKSHAT
+          </span>
+          <span className="mt-1.5 text-[11px] uppercase tracking-[0.35em] text-olive">
+            Never Ending Stories
+          </span>
+        </span>
+      </Link>
+    );
+  }
+
   return (
     <Link
       href="/"
-      className={`group inline-flex items-center ${
-        variant === "full" ? "flex-col items-start text-left" : "gap-3"
-      } ${className}`}
+      className={`group inline-flex items-center gap-3 ${className}`}
       aria-label="Stories by Akshat — Home"
     >
       {showMark && (
-        <LogoMark
-          className={
-            variant === "nav"
-              ? "h-9 w-9 shrink-0 translate-y-0.5 transition-transform duration-500 ease-out group-hover:rotate-12 md:h-10 md:w-10"
-              : "mb-3 h-16 w-16 shrink-0 transition-transform duration-500 ease-out group-hover:rotate-12"
-          }
-        />
+        <LogoMark className="h-10 w-10 shrink-0 translate-y-0.5 transition-transform duration-500 ease-out group-hover:rotate-12 md:h-11 md:w-11" />
       )}
 
-      <span className="flex flex-col items-start">
-        <span
-          className={`font-logo-script leading-none text-marigold-dark ${
-            variant === "nav" ? "text-4xl md:text-5xl" : "text-[90px] md:text-[112px]"
-          }`}
-        >
+      <span className="flex -translate-y-2.5 flex-col items-start md:-translate-y-3">
+        <span className="font-logo-script text-[60px] leading-none text-marigold-dark md:text-[72px]">
           stories by
         </span>
-        <span
-          className={`font-logo-akshat font-semibold uppercase leading-none text-ink ${
-            variant === "nav"
-              ? "text-base tracking-[0.28em] md:text-lg"
-              : "text-2xl tracking-[0.3em] md:text-3xl"
-          }`}
-        >
+        <span className="font-logo-akshat -mt-2 text-base font-semibold uppercase leading-none tracking-[0.28em] text-ink md:-mt-2.5 md:text-lg">
           AKSHAT
         </span>
-        {variant === "full" && (
-          <span className="mt-2 text-xs uppercase tracking-[0.35em] text-olive">
-            Never Ending Stories
-          </span>
-        )}
       </span>
     </Link>
   );
